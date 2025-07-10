@@ -1,0 +1,1 @@
+"""Test suite for AWS whitelisting MCP server."""

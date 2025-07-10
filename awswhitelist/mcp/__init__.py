@@ -1,0 +1,1 @@
+"""MCP protocol implementation for AWS whitelisting server."""

@@ -1,0 +1,7 @@
+# Core dependencies for AWS Whitelisting MCP Server
+boto3>=1.34.0
+botocore>=1.34.0
+python-json-logger>=2.0.7
+pydantic>=2.5.0
+typing-extensions>=4.9.0
+python-dotenv>=1.0.0

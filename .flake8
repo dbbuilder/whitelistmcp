@@ -1,0 +1,23 @@
+[flake8]
+max-line-length = 100
+max-complexity = 10
+exclude = 
+    .git,
+    __pycache__,
+    venv,
+    .venv,
+    .pytest_cache,
+    build,
+    dist,
+    *.egg-info
+ignore = 
+    # Black handles whitespace
+    E203,
+    W503,
+    # Allow lambda expressions
+    E731
+per-file-ignores =
+    # Allow imports at bottom of __init__.py
+    __init__.py:E402
+    # Allow assertions in tests
+    tests/*:S101

@@ -1,0 +1,194 @@
+{
+  "server": {
+    "name": "aws-whitelist",
+    "version": "1.0.0",
+    "description": "MCP server for AWS security group IP whitelisting"
+  },
+  
+  "credentials": {
+    "default_profile": "default",
+    "provider_chain": [
+      "explicit",
+      "profile", 
+      "environment",
+      "iam_role",
+      "config_file"
+    ],
+    "profiles": {
+      "default": {
+        "source": "environment",
+        "region": "us-east-1",
+        "description": "Default profile using environment variables"
+      },
+      "production": {
+        "source": "iam_role",
+        "role_arn": "arn:aws:iam::123456789012:role/WhitelistRole",
+        "region": "us-east-1",
+        "external_id": "optional-external-id"
+      },
+      "development": {
+        "source": "file",
+        "credential_file": "~/.aws/credentials",
+        "profile_name": "dev",
+        "region": "us-west-2"
+      },
+      "staging": {
+        "source": "secrets_manager",
+        "secret_name": "aws-whitelist/staging-creds",
+        "region": "eu-west-1"
+      }
+    }
+  },
+  
+  "defaults": {
+    "region": "us-east-1",
+    "port": 443,
+    "protocol": "tcp",
+    "description_template": "MCP Whitelist - {date} - {source}",
+    "ip_address": null,
+    "auto_detect_ip": false,
+    "from_port": null,
+    "to_port": null
+  },
+  
+  "constants": {
+    "common_ports": {
+      "https": 443,
+      "http": 80,
+      "ssh": 22,
+      "rdp": 3389,
+      "mysql": 3306,
+      "postgres": 5432,
+      "mongodb": 27017,
+      "redis": 6379,
+      "elastic": 9200,
+      "kibana": 5601
+    },
+    "port_ranges": {
+      "ephemeral": {
+        "from_port": 49152,
+        "to_port": 65535
+      },
+      "node": {
+        "from_port": 3000,
+        "to_port": 3999
+      },
+      "highports": {
+        "from_port": 8000,
+        "to_port": 8999
+      }
+    },
+    "protocols": {
+      "web": "tcp",
+      "ping": "icmp",
+      "any": "-1"
+    }
+  },
+  
+  "features": {
+    "resource_lookup": true,
+    "bulk_operations": true,
+    "ip_detection": true,
+    "credential_caching": true,
+    "cache_ttl_seconds": 3600,
+    "auto_cleanup_expired_rules": false,
+    "validate_ip_reputation": false
+  },
+  
+  "security": {
+    "require_mcp_auth": false,
+    "allowed_profiles": ["default", "development", "staging", "production"],
+    "denied_ips": [],
+    "allowed_ip_ranges": [],
+    "rate_limit": {
+      "enabled": true,
+      "requests_per_minute": 60,
+      "requests_per_hour": 1000,
+      "burst_size": 10
+    },
+    "audit": {
+      "enabled": true,
+      "log_credentials_used": true,
+      "log_source_ip": true
+    }
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "outputs": ["console", "file"],
+    "file": {
+      "path": "logs/aws-whitelist.log",
+      "max_size_mb": 100,
+      "backup_count": 5,
+      "rotation": "size"
+    },
+    "redact_patterns": [
+      "aws_access_key_id",
+      "aws_secret_access_key",
+      "aws_session_token",
+      "password",
+      "token"
+    ]
+  },
+  
+  "aws": {
+    "default_timeout": 30,
+    "max_retry_attempts": 3,
+    "retry_backoff_base": 2,
+    "retry_max_delay": 20,
+    "assume_role_duration": 3600,
+    "sts_regional_endpoints": "regional"
+  },
+  
+  "mcp": {
+    "methods": {
+      "aws.whitelist": {
+        "description": "Add IP to security group",
+        "requires_auth": false
+      },
+      "aws.whitelist_bulk": {
+        "description": "Add multiple IPs to security groups",
+        "requires_auth": false
+      },
+      "aws.remove_ip": {
+        "description": "Remove IP from security group",
+        "requires_auth": true
+      },
+      "aws.list_security_groups": {
+        "description": "List available security groups",
+        "requires_auth": false
+      },
+      "aws.find_security_group": {
+        "description": "Find security group by name or tag",
+        "requires_auth": false
+      },
+      "aws.list_rules": {
+        "description": "List current rules in a security group",
+        "requires_auth": false
+      },
+      "aws.get_my_ip": {
+        "description": "Get current public IP address",
+        "requires_auth": false
+      },
+      "aws.list_profiles": {
+        "description": "List available credential profiles",
+        "requires_auth": false
+      },
+      "aws.test_credentials": {
+        "description": "Test AWS credentials",
+        "requires_auth": false
+      }
+    }
+  },
+  
+  "ip_detection": {
+    "services": [
+      "https://api.ipify.org?format=json",
+      "https://ipinfo.io/ip",
+      "https://ifconfig.me/ip"
+    ],
+    "timeout": 5,
+    "cache_duration": 300
+  }
+}
