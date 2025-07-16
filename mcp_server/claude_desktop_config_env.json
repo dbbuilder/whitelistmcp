@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "aws-security-group": {
+      "command": "python",
+      "args": ["D:\\dev2\\awswhitelist2\\mcp_server\\server_env.py"],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "ENV_FILE": "D:\\dev2\\awswhitelist2\\.env"
+      }
+    },
+    "aws-security-group-node": {
+      "command": "node",
+      "args": ["D:\\dev2\\awswhitelist2\\mcp_server\\build\\index.js"],
+      "env": {
+        "NODE_ENV": "production",
+        "ENV_FILE": "D:\\dev2\\awswhitelist2\\.env"
+      }
+    }
+  }
+}

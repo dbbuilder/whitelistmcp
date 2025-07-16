@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "awswhitelist": {
+      "command": "python",
+      "args": ["-m", "awswhitelist.main"],
+      "cwd": "C:\\Users\\YourUsername\\awswhitelist2",
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

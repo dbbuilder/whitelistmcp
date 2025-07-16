@@ -1,0 +1,19 @@
+# AWS Security Group Whitelist Management
+# Python Dependencies
+
+# AWS SDK
+boto3>=1.39.4
+botocore>=1.39.4
+
+# Required by boto3
+jmespath>=0.7.1
+python-dateutil>=2.1
+s3transfer>=0.13.0
+urllib3>=1.25.4,<3.0.0
+six>=1.5
+
+# Development dependencies (optional)
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0
+# mypy>=0.950

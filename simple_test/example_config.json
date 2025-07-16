@@ -1,0 +1,7 @@
+{
+    "UserName": "example_user",
+    "UserIP": "x.x.x.x",
+    "Port": "8080",
+    "SecurityGroupID": "sg-0f0df629567eb6344",
+    "ResourceName": "DevEC2"
+}
