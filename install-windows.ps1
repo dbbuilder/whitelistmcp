@@ -94,8 +94,8 @@ Write-Host "✓ Configuration saved to: $configPath" -ForegroundColor Green
 Write-Host ""
 Write-Host "Testing installation..." -ForegroundColor Green
 try {
-    $testOutput = awswhitelist --help 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    $testOutput = & awswhitelist --help 2>&1
+    if ($?) {
         Write-Host "✓ Installation test passed" -ForegroundColor Green
     } else {
         Write-Host "Warning: Installation test failed. Please check the error messages above." -ForegroundColor Yellow
