@@ -11,8 +11,8 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 setup(
     name="awswhitelist-mcp",
     version="1.0.0",
-    author="AWS Whitelisting Team",
-    author_email="your.email@example.com",
+    author="DBBuilder",
+    author_email="dbbuilderio@gmail.com",
     description="MCP server for AWS Security Group IP whitelisting with stateless credential handling",
     keywords="aws, security-group, mcp, model-context-protocol, whitelist, ip-management",
     long_description=long_description,
