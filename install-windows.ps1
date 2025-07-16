@@ -40,37 +40,11 @@ try {
     exit 1
 }
 
-# Check git
-Write-Host "Checking git..." -ForegroundColor Green
-try {
-    $gitVersion = git --version
-    Write-Host "✓ $gitVersion" -ForegroundColor Green
-} catch {
-    Write-Host "Error: git not found. Please install git from https://git-scm.com/download/win" -ForegroundColor Red
-    exit 1
-}
 
-# Set installation directory
-$installDir = "$env:USERPROFILE\.awswhitelist-mcp"
-
-# Clone or update repository
+# Install from PyPI
 Write-Host ""
-if (Test-Path $installDir) {
-    Write-Host "Updating existing installation..." -ForegroundColor Green
-    Push-Location $installDir
-    git pull
-    Pop-Location
-} else {
-    Write-Host "Cloning repository..." -ForegroundColor Green
-    git clone https://github.com/dbbuilder/awswhitelist2.git $installDir
-}
-
-# Install Python package
-Write-Host ""
-Write-Host "Installing Python dependencies..." -ForegroundColor Green
-Push-Location $installDir
-python -m pip install -e . --user
-Pop-Location
+Write-Host "Installing AWS Whitelisting MCP Server from PyPI..." -ForegroundColor Green
+python -m pip install --user awswhitelist-mcp
 
 # Configure Claude Desktop
 Write-Host ""
@@ -86,9 +60,8 @@ if (-not (Test-Path $configDir)) {
 
 # Prepare MCP server configuration
 $mcpConfig = @{
-    command = "python"
-    args = @("-m", "awswhitelist.main")
-    cwd = $installDir.Replace('\', '/')
+    command = "awswhitelist"
+    args = @()
     env = @{
         PYTHONUNBUFFERED = "1"
     }
@@ -120,9 +93,8 @@ Write-Host "✓ Configuration saved to: $configPath" -ForegroundColor Green
 # Test installation
 Write-Host ""
 Write-Host "Testing installation..." -ForegroundColor Green
-Push-Location $installDir
 try {
-    $testOutput = python -m awswhitelist.main --help 2>&1
+    $testOutput = awswhitelist --help 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✓ Installation test passed" -ForegroundColor Green
     } else {
@@ -131,7 +103,6 @@ try {
 } catch {
     Write-Host "Warning: Could not test installation." -ForegroundColor Yellow
 }
-Pop-Location
 
 # Final instructions
 Write-Host ""
@@ -144,8 +115,7 @@ Write-Host "1. Restart Claude Desktop application"
 Write-Host "2. The AWS Whitelisting server will be available in Claude"
 Write-Host ""
 Write-Host "To manually test the server:" -ForegroundColor Yellow
-Write-Host "  cd $installDir"
-Write-Host "  python -m awswhitelist.main --help"
+Write-Host "  awswhitelist --help"
 Write-Host ""
 Write-Host "Configuration file location:" -ForegroundColor Yellow
 Write-Host "  $configPath"

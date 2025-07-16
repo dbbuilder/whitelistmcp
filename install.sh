@@ -15,20 +15,9 @@ if ! command -v pip3 &> /dev/null; then
     exit 1
 fi
 
-# Clone or update repository
-if [ -d "$HOME/.awswhitelist-mcp" ]; then
-    echo "Updating existing installation..."
-    cd "$HOME/.awswhitelist-mcp"
-    git pull
-else
-    echo "Cloning repository..."
-    git clone https://github.com/dbbuilder/awswhitelist2.git "$HOME/.awswhitelist-mcp"
-    cd "$HOME/.awswhitelist-mcp"
-fi
-
-# Install package
-echo "Installing Python package..."
-pip3 install -e . --user
+# Install from PyPI
+echo "Installing AWS Whitelisting MCP Server from PyPI..."
+pip3 install --user awswhitelist-mcp
 
 # Configure Claude Desktop
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -58,9 +47,8 @@ if 'mcpServers' not in config:
     config['mcpServers'] = {}
 
 config['mcpServers']['awswhitelist'] = {
-    'command': 'python3',
-    'args': ['-m', 'awswhitelist.main'],
-    'cwd': '$HOME/.awswhitelist-mcp',
+    'command': 'awswhitelist',
+    'args': [],
     'env': {'PYTHONUNBUFFERED': '1'}
 }
 
@@ -75,9 +63,8 @@ else
 {
   "mcpServers": {
     "awswhitelist": {
-      "command": "python3",
-      "args": ["-m", "awswhitelist.main"],
-      "cwd": "$HOME/.awswhitelist-mcp",
+      "command": "awswhitelist",
+      "args": [],
       "env": {
         "PYTHONUNBUFFERED": "1"
       }
@@ -95,6 +82,5 @@ echo "1. Restart Claude Desktop"
 echo "2. The AWS Whitelisting server will be available in Claude"
 echo ""
 echo "To test the installation:"
-echo "  cd $HOME/.awswhitelist-mcp"
-echo "  python3 -m awswhitelist.main --help"
+echo "  awswhitelist --help"
 echo ""

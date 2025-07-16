@@ -1,5 +1,9 @@
 # AWS Security Group Management System
 
+[![PyPI version](https://badge.fury.io/py/awswhitelist-mcp.svg)](https://pypi.org/project/awswhitelist-mcp/)
+[![Python versions](https://img.shields.io/pypi/pyversions/awswhitelist-mcp.svg)](https://pypi.org/project/awswhitelist-mcp/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive solution for managing AWS EC2 Security Group rules with environment variable configuration, Model Context Protocol (MCP) server integration, and secure credential management.
 
 ## 🚀 Features

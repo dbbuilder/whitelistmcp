@@ -4,15 +4,11 @@ This guide explains how to install and configure the AWS Whitelisting MCP Server
 
 ## Installation Options
 
-### Option 1: Install as Python Package (Recommended)
+### Option 1: Install from PyPI (Recommended)
 
 1. Install the package:
    ```bash
-   # From the project directory
-   pip install -e /path/to/awswhitelist2
-   
-   # Or install directly from GitHub
-   pip install git+https://github.com/dbbuilder/awswhitelist2.git
+   pip install awswhitelist-mcp
    ```
 
 2. Add to Claude Desktop configuration:
