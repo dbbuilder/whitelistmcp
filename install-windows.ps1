@@ -86,25 +86,30 @@ if (-not (Test-Path $configDir)) {
 if (Test-Path $configPath) {
     try {
         $configContent = Get-Content $configPath -Raw
-        # Parse existing JSON
-        $config = $configContent | ConvertFrom-Json -AsHashtable
+        # Parse existing JSON (compatible with older PowerShell)
+        $config = $configContent | ConvertFrom-Json
         
         # Ensure mcpServers exists
-        if (-not $config.ContainsKey("mcpServers")) {
-            $config["mcpServers"] = @{}
+        if (-not $config.mcpServers) {
+            $config | Add-Member -MemberType NoteProperty -Name "mcpServers" -Value ([PSCustomObject]@{}) -Force
         }
         
-        # Add awswhitelist configuration
-        $config["mcpServers"]["awswhitelist"] = @{
+        # Create awswhitelist configuration
+        $awsConfig = [PSCustomObject]@{
             command = "awswhitelist"
             args = @()
-            env = @{
+            env = [PSCustomObject]@{
                 PYTHONUNBUFFERED = "1"
             }
         }
         
+        # Add awswhitelist to mcpServers
+        if ($config.mcpServers -is [PSCustomObject]) {
+            $config.mcpServers | Add-Member -MemberType NoteProperty -Name "awswhitelist" -Value $awsConfig -Force
+        }
+        
         # Convert to JSON with proper formatting
-        $jsonOutput = $config | ConvertTo-Json -Depth 10 -Compress:$false
+        $jsonOutput = $config | ConvertTo-Json -Depth 10
         
         # Write the JSON file
         Set-Content -Path $configPath -Value $jsonOutput -Encoding UTF8
@@ -117,12 +122,12 @@ if (Test-Path $configPath) {
     }
 } else {
     # Create new configuration
-    $config = @{
-        mcpServers = @{
-            awswhitelist = @{
+    $config = [PSCustomObject]@{
+        mcpServers = [PSCustomObject]@{
+            awswhitelist = [PSCustomObject]@{
                 command = "awswhitelist"
                 args = @()
-                env = @{
+                env = [PSCustomObject]@{
                     PYTHONUNBUFFERED = "1"
                 }
             }
@@ -130,7 +135,7 @@ if (Test-Path $configPath) {
     }
     
     try {
-        $jsonOutput = $config | ConvertTo-Json -Depth 10 -Compress:$false
+        $jsonOutput = $config | ConvertTo-Json -Depth 10
         New-Item -ItemType Directory -Path $configDir -Force | Out-Null
         Set-Content -Path $configPath -Value $jsonOutput -Encoding UTF8
         Write-Host "Configuration created at: $configPath" -ForegroundColor Green
