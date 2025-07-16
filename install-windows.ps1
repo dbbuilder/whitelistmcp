@@ -82,48 +82,63 @@ if (-not (Test-Path $configDir)) {
     New-Item -ItemType Directory -Path $configDir -Force | Out-Null
 }
 
-# Prepare MCP server configuration
-$mcpConfig = @{
-    command = "awswhitelist"
-    args = @()
-    env = @{
-        PYTHONUNBUFFERED = "1"
-    }
-}
-
 # Load or create configuration
-$config = $null
 if (Test-Path $configPath) {
     try {
         $configContent = Get-Content $configPath -Raw
-        $config = $configContent | ConvertFrom-Json
-        if (-not $config.mcpServers) {
-            $config | Add-Member -MemberType NoteProperty -Name "mcpServers" -Value @{} -Force
+        # Parse existing JSON
+        $config = $configContent | ConvertFrom-Json -AsHashtable
+        
+        # Ensure mcpServers exists
+        if (-not $config.ContainsKey("mcpServers")) {
+            $config["mcpServers"] = @{}
         }
+        
+        # Add awswhitelist configuration
+        $config["mcpServers"]["awswhitelist"] = @{
+            command = "awswhitelist"
+            args = @()
+            env = @{
+                PYTHONUNBUFFERED = "1"
+            }
+        }
+        
+        # Convert to JSON with proper formatting
+        $jsonOutput = $config | ConvertTo-Json -Depth 10 -Compress:$false
+        
+        # Write the JSON file
+        Set-Content -Path $configPath -Value $jsonOutput -Encoding UTF8
+        Write-Host "Configuration saved to: $configPath" -ForegroundColor Green
     }
     catch {
-        Write-Host "Warning: Existing config file is invalid. Creating new configuration." -ForegroundColor Yellow
-        $config = @{ mcpServers = @{} }
+        Write-Host "Error updating configuration: $_" -ForegroundColor Red
+        Write-Host "Please check your Claude Desktop config file for syntax errors." -ForegroundColor Yellow
+        exit 1
     }
 } else {
-    $config = @{ mcpServers = @{} }
-}
-
-# Add or update awswhitelist server
-if ($config.mcpServers -is [System.Management.Automation.PSCustomObject]) {
-    $config.mcpServers | Add-Member -MemberType NoteProperty -Name "awswhitelist" -Value $mcpConfig -Force
-} else {
-    $config.mcpServers["awswhitelist"] = $mcpConfig
-}
-
-# Save configuration
-try {
-    $config | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
-    Write-Host "Configuration saved to: $configPath" -ForegroundColor Green
-}
-catch {
-    Write-Host "Error saving configuration: $_" -ForegroundColor Red
-    exit 1
+    # Create new configuration
+    $config = @{
+        mcpServers = @{
+            awswhitelist = @{
+                command = "awswhitelist"
+                args = @()
+                env = @{
+                    PYTHONUNBUFFERED = "1"
+                }
+            }
+        }
+    }
+    
+    try {
+        $jsonOutput = $config | ConvertTo-Json -Depth 10 -Compress:$false
+        New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+        Set-Content -Path $configPath -Value $jsonOutput -Encoding UTF8
+        Write-Host "Configuration created at: $configPath" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Error creating configuration: $_" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Test installation
