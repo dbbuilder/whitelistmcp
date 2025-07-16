@@ -14,6 +14,7 @@ if (-not $isAdmin) {
 
 # Check Python
 Write-Host "Checking Python installation..." -ForegroundColor Green
+$pythonInstalled = $false
 try {
     $pythonVersion = python --version 2>&1
     if ($pythonVersion -match "Python (\d+)\.(\d+)") {
@@ -23,28 +24,51 @@ try {
             Write-Host "Error: Python 3.8+ required. Found: $pythonVersion" -ForegroundColor Red
             exit 1
         }
-        Write-Host "✓ Found $pythonVersion" -ForegroundColor Green
+        Write-Host "Found $pythonVersion" -ForegroundColor Green
+        $pythonInstalled = $true
     }
-} catch {
+}
+catch {
     Write-Host "Error: Python not found. Please install Python 3.8+ from https://www.python.org/downloads/" -ForegroundColor Red
+    exit 1
+}
+
+if (-not $pythonInstalled) {
+    Write-Host "Error: Could not verify Python installation" -ForegroundColor Red
     exit 1
 }
 
 # Check pip
 Write-Host "Checking pip..." -ForegroundColor Green
+$pipInstalled = $false
 try {
-    $pipVersion = python -m pip --version
-    Write-Host "✓ pip is available" -ForegroundColor Green
-} catch {
+    $pipVersion = python -m pip --version 2>&1
+    if ($pipVersion -match "pip") {
+        Write-Host "pip is available" -ForegroundColor Green
+        $pipInstalled = $true
+    }
+}
+catch {
     Write-Host "Error: pip not found. Please ensure pip is installed with Python." -ForegroundColor Red
     exit 1
 }
 
+if (-not $pipInstalled) {
+    Write-Host "Error: Could not verify pip installation" -ForegroundColor Red
+    exit 1
+}
 
 # Install from PyPI
 Write-Host ""
 Write-Host "Installing AWS Whitelisting MCP Server from PyPI..." -ForegroundColor Green
-python -m pip install --user awswhitelist-mcp
+$installResult = python -m pip install --user awswhitelist-mcp 2>&1
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Package installed successfully!" -ForegroundColor Green
+} else {
+    Write-Host "Error installing package. Output:" -ForegroundColor Red
+    Write-Host $installResult
+    exit 1
+}
 
 # Configure Claude Desktop
 Write-Host ""
@@ -68,13 +92,16 @@ $mcpConfig = @{
 }
 
 # Load or create configuration
+$config = $null
 if (Test-Path $configPath) {
     try {
-        $config = Get-Content $configPath -Raw | ConvertFrom-Json
+        $configContent = Get-Content $configPath -Raw
+        $config = $configContent | ConvertFrom-Json
         if (-not $config.mcpServers) {
             $config | Add-Member -MemberType NoteProperty -Name "mcpServers" -Value @{} -Force
         }
-    } catch {
+    }
+    catch {
         Write-Host "Warning: Existing config file is invalid. Creating new configuration." -ForegroundColor Yellow
         $config = @{ mcpServers = @{} }
     }
@@ -83,38 +110,51 @@ if (Test-Path $configPath) {
 }
 
 # Add or update awswhitelist server
-$config.mcpServers.awswhitelist = $mcpConfig
+if ($config.mcpServers -is [System.Management.Automation.PSCustomObject]) {
+    $config.mcpServers | Add-Member -MemberType NoteProperty -Name "awswhitelist" -Value $mcpConfig -Force
+} else {
+    $config.mcpServers["awswhitelist"] = $mcpConfig
+}
 
 # Save configuration
-$config | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
-
-Write-Host "✓ Configuration saved to: $configPath" -ForegroundColor Green
+try {
+    $config | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
+    Write-Host "Configuration saved to: $configPath" -ForegroundColor Green
+}
+catch {
+    Write-Host "Error saving configuration: $_" -ForegroundColor Red
+    exit 1
+}
 
 # Test installation
 Write-Host ""
 Write-Host "Testing installation..." -ForegroundColor Green
-$testError = $null
+$testResult = $null
 try {
-    $testOutput = awswhitelist --help 2>&1
-    Write-Host "✓ Installation test passed" -ForegroundColor Green
+    $testResult = cmd /c "awswhitelist --help 2>&1"
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Installation test passed!" -ForegroundColor Green
+    } else {
+        Write-Host "Warning: Could not verify installation. You may need to restart your terminal." -ForegroundColor Yellow
+    }
 }
 catch {
-    Write-Host "Warning: Could not test installation. Error: $_" -ForegroundColor Yellow
+    Write-Host "Warning: Could not test installation. You may need to restart your terminal." -ForegroundColor Yellow
 }
 
 # Final instructions
 Write-Host ""
 Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host "✅ Installation complete!" -ForegroundColor Green
+Write-Host "Installation complete!" -ForegroundColor Green
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
-Write-Host "1. Restart Claude Desktop application"
-Write-Host "2. The AWS Whitelisting server will be available in Claude"
+Write-Host "1. Restart Claude Desktop application" -ForegroundColor White
+Write-Host "2. The AWS Whitelisting server will be available in Claude" -ForegroundColor White
 Write-Host ""
 Write-Host "To manually test the server:" -ForegroundColor Yellow
-Write-Host "  awswhitelist --help"
+Write-Host "  awswhitelist --help" -ForegroundColor White
 Write-Host ""
 Write-Host "Configuration file location:" -ForegroundColor Yellow
-Write-Host "  $configPath"
+Write-Host "  $configPath" -ForegroundColor White
 Write-Host ""
