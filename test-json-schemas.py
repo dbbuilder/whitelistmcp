@@ -26,7 +26,7 @@ if cred_match:
 
 # Test a complete tool schema
 test_tool = {
-    "name": "whitelist/add",
+    "name": "whitelist_add",
     "description": "Add an IP address to an AWS Security Group",
     "inputSchema": {
         "type": "object",

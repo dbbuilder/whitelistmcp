@@ -1,8 +1,8 @@
-# Building MCP Servers with Python: A Guide to stdout/stderr and Protocol Compliance
+# Building MCP Servers with Python: A Complete Guide to Protocol Compliance
 
 ## Introduction
 
-The Model Context Protocol (MCP) is a powerful way to extend AI assistants like Claude Desktop with custom tools. However, building an MCP server requires strict adherence to protocol specifications, particularly around input/output streams. This guide documents critical lessons learned while building the `awswhitelist-mcp` server and provides best practices for Python developers.
+The Model Context Protocol (MCP) is a powerful way to extend AI assistants like Claude Desktop with custom tools. However, building an MCP server requires strict adherence to protocol specifications, particularly around input/output streams, JSON schema validation, and naming conventions. This guide documents critical lessons learned while building the `awswhitelist-mcp` server (versions 1.0.0 through 1.1.9) and provides best practices for Python developers.
 
 ## The Fundamental Rule of MCP
 
@@ -357,9 +357,234 @@ Building MCP servers in Python requires discipline about output streams. The gol
 
 By following these guidelines, you can avoid the common pitfalls that lead to "Unexpected end of JSON input" and other protocol errors, ensuring your MCP server works reliably with Claude Desktop and other MCP clients.
 
+## Additional Lessons from awswhitelist-mcp Development
+
+### Version Management (v1.1.7)
+
+**Problem:** Version displayed incorrectly when running `--version` command.
+
+**Solution:** Centralize version management in a single file:
+
+```python
+# __version__.py
+"""Version information for your package."""
+__version__ = "1.1.9"
+
+# setup.py
+exec(open("your_package/__version__.py").read())
+
+# main.py or cli.py
+from your_package import __version__
+parser.add_argument('--version', action='version', version=__version__)
+```
+
+### JSON Schema Validation (v1.1.8)
+
+**Problem:** Claude Desktop shows "string should match pattern" errors for tool definitions.
+
+**Common Issues:**
+
+1. **Invalid schema properties:**
+   ```json
+   // WRONG - "required" can't be inside a property definition
+   {
+     "session_token": {
+       "type": "string",
+       "required": false  // This is invalid!
+     }
+   }
+   
+   // CORRECT - "required" is an array at the object level
+   {
+     "properties": {
+       "session_token": {"type": "string"}
+     },
+     "required": ["other_field"]  // session_token is optional
+   }
+   ```
+
+2. **Inconsistent schemas across tools:**
+   ```python
+   # GOOD - Define reusable schemas
+   credential_schema = {
+       "type": "object",
+       "properties": {
+           "access_key_id": {"type": "string"},
+           "secret_access_key": {"type": "string"},
+           "region": {"type": "string"},
+           "session_token": {"type": "string"}
+       },
+       "required": ["access_key_id", "secret_access_key", "region"]
+   }
+   
+   # Use the same schema everywhere
+   tools = [
+       {
+           "name": "tool1",
+           "inputSchema": {
+               "properties": {
+                   "credentials": credential_schema,
+                   # ... other properties
+               }
+           }
+       }
+   ]
+   ```
+
+3. **Missing constraints on fields:**
+   ```json
+   // GOOD - Add constraints for better validation
+   {
+     "port": {
+       "type": "integer",
+       "description": "Port number",
+       "minimum": 1,
+       "maximum": 65535
+     },
+     "protocol": {
+       "type": "string",
+       "enum": ["tcp", "udp", "icmp"],
+       "description": "Network protocol"
+     }
+   }
+   ```
+
+### Tool Naming Conventions (v1.1.9)
+
+**Problem:** Tool names with slashes (e.g., `whitelist/add`) cause validation errors.
+
+**Solution:** Use underscores instead of slashes:
+
+```python
+# WRONG
+tools = [
+    {"name": "namespace/action", ...}
+]
+
+# CORRECT
+tools = [
+    {"name": "namespace_action", ...}
+]
+
+# Update your method routing to match
+self.methods = {
+    "namespace_action": self._handle_namespace_action,
+    # ...
+}
+```
+
+### ID Field Flexibility (v1.1.1)
+
+**Problem:** JSON-RPC id field can be string or number, but strict type checking causes crashes.
+
+**Solution:** Accept both types:
+
+```python
+from typing import Union
+
+class MCPRequest(BaseModel):
+    jsonrpc: str
+    id: Optional[Union[str, int]] = None  # Can be string, int, or None
+    method: str
+    params: Dict[str, Any] = {}
+```
+
+### Windows-Specific Issues
+
+**Problem:** Even stderr output can cause issues on Windows in some configurations.
+
+**Solution:** Make logging completely optional:
+
+```python
+import os
+
+# Only enable logging if explicitly requested
+if os.environ.get('MCP_ENABLE_LOGGING'):
+    # Set up logging
+    pass
+else:
+    # Disable all logging
+    logging.disable(logging.CRITICAL)
+```
+
+## Complete Best Practices Checklist
+
+✅ **Output Stream Discipline**
+- NEVER use plain `print()` in production MCP code
+- Configure logging to use stderr exclusively
+- Consider disabling console logging entirely for maximum compatibility
+
+✅ **Protocol Compliance**
+- Handle notifications properly (return `None`, no stdout output)
+- Accept flexible id types (string or number)
+- Implement all required methods (`initialize`, `tools/list`, etc.)
+
+✅ **JSON Schema Validation**
+- Use JSON Schema Draft 7 format
+- Define reusable schemas for common structures
+- Add proper constraints (min/max, enum, etc.)
+- Never put `"required"` inside property definitions
+
+✅ **Tool Naming**
+- Use underscores, not slashes (e.g., `tool_name` not `tool/name`)
+- Keep names consistent between definition and method routing
+- Use descriptive names that indicate the action
+
+✅ **Version Management**
+- Centralize version in `__version__.py`
+- Reference it consistently across all files
+- Update version with each release
+
+✅ **Error Handling**
+- Send proper JSON-RPC error responses
+- Use appropriate error codes (-32600, -32601, etc.)
+- Include helpful error messages and data
+
+✅ **Testing**
+- Test with real MCP clients (Claude Desktop)
+- Validate all JSON schemas
+- Check stdout contains only valid JSON-RPC
+- Test both regular requests and notifications
+
+## Debugging Workflow
+
+1. **Enable verbose logging to a file:**
+   ```python
+   if os.environ.get('MCP_DEBUG'):
+       file_handler = logging.FileHandler('/tmp/mcp_debug.log')
+       logger.addHandler(file_handler)
+   ```
+
+2. **Test individual components:**
+   ```bash
+   # Test stdout cleanliness
+   echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | \
+   python -m your_server 2>/dev/null | jq .
+   ```
+
+3. **Validate schemas:**
+   ```python
+   from jsonschema import Draft7Validator
+   
+   # Validate your tool schemas
+   for tool in tools:
+       Draft7Validator.check_schema(tool["inputSchema"])
+   ```
+
+## Version History Lessons
+
+- **v1.0.1**: Initial stdout/stderr separation
+- **v1.1.1**: ID field type flexibility
+- **v1.1.5**: Complete console logging disable
+- **v1.1.6**: Notification handling fix
+- **v1.1.7**: Centralized version management
+- **v1.1.8**: JSON schema validation fixes
+- **v1.1.9**: Tool naming convention change
+
 ## Further Reading
 
 - [Model Context Protocol Specification](https://modelcontextprotocol.io/specification)
 - [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification)
+- [JSON Schema Draft 7](https://json-schema.org/draft-07/json-schema-release-notes.html)
 - [Python logging documentation](https://docs.python.org/3/library/logging.html)
 - [Python stdin, stdout, stderr](https://docs.python.org/3/library/sys.html#sys.stdin)

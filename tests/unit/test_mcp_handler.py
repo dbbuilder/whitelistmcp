@@ -23,7 +23,7 @@ class TestMCPRequest:
         request = MCPRequest(
             jsonrpc="2.0",
             id="test-123",
-            method="whitelist/add",
+            method="whitelist_add",
             params={
                 "credentials": {
                     "access_key_id": "AKIAIOSFODNN7EXAMPLE",
@@ -35,7 +35,7 @@ class TestMCPRequest:
         )
         assert request.jsonrpc == "2.0"
         assert request.id == "test-123"
-        assert request.method == "whitelist/add"
+        assert request.method == "whitelist_add"
         assert request.params["security_group_id"] == "sg-123456"
     
     def test_mcp_request_validation(self):
@@ -44,7 +44,7 @@ class TestMCPRequest:
         request = MCPRequest(
             jsonrpc="2.0",
             id="123",
-            method="whitelist/add",
+            method="whitelist_add",
             params={}
         )
         assert request.jsonrpc == "2.0"
@@ -124,13 +124,13 @@ class TestValidateMCPRequest:
         request_dict = {
             "jsonrpc": "2.0",
             "id": "123",
-            "method": "whitelist/add",
+            "method": "whitelist_add",
             "params": {"test": "value"}
         }
         
         request = validate_mcp_request(request_dict)
         assert isinstance(request, MCPRequest)
-        assert request.method == "whitelist/add"
+        assert request.method == "whitelist_add"
     
     def test_validate_invalid_request(self):
         """Test validating invalid MCP requests."""
@@ -204,14 +204,14 @@ class TestMCPHandler:
         """Test handler initialization."""
         assert handler.config == config
         assert handler.methods is not None
-        assert "whitelist/add" in handler.methods
-        assert "whitelist/remove" in handler.methods
-        assert "whitelist/list" in handler.methods
+        assert "whitelist_add" in handler.methods
+        assert "whitelist_remove" in handler.methods
+        assert "whitelist_list" in handler.methods
     
     @patch('awswhitelist.mcp.handler.AWSService')
     @patch('awswhitelist.mcp.handler.validate_credentials')
     def test_handle_whitelist_add(self, mock_validate, mock_aws_service, handler):
-        """Test handling whitelist/add method."""
+        """Test handling whitelist_add method."""
         # Mock credential validation
         mock_validate.return_value = {
             'valid': True,
@@ -231,7 +231,7 @@ class TestMCPHandler:
         request = MCPRequest(
             jsonrpc="2.0",
             id="test-123",
-            method="whitelist/add",
+            method="whitelist_add",
             params={
                 "credentials": {
                     "access_key_id": "AKIAIOSFODNN7EXAMPLE",
@@ -265,7 +265,7 @@ class TestMCPHandler:
         request = MCPRequest(
             jsonrpc="2.0",
             id="test-123",
-            method="whitelist/add",
+            method="whitelist_add",
             params={
                 "credentials": {
                     "access_key_id": "invalid",
@@ -289,7 +289,7 @@ class TestMCPHandler:
         request = MCPRequest(
             jsonrpc="2.0",
             id="test-123",
-            method="whitelist/add",
+            method="whitelist_add",
             params={
                 # Missing required parameters
                 "security_group_id": "sg-123456"
@@ -320,7 +320,7 @@ class TestMCPHandler:
     @patch('awswhitelist.mcp.handler.AWSService')
     @patch('awswhitelist.mcp.handler.validate_credentials')
     def test_handle_whitelist_list(self, mock_validate, mock_aws_service, handler):
-        """Test handling whitelist/list method."""
+        """Test handling whitelist_list method."""
         # Mock credential validation
         mock_validate.return_value = {
             'valid': True,
@@ -355,7 +355,7 @@ class TestMCPHandler:
         request = MCPRequest(
             jsonrpc="2.0",
             id="test-123",
-            method="whitelist/list",
+            method="whitelist_list",
             params={
                 "credentials": {
                     "access_key_id": "AKIAIOSFODNN7EXAMPLE",

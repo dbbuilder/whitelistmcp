@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.9] - 2025-07-17
+
+### Changed
+- **BREAKING**: Changed tool naming convention from slashes to underscores
+  - `whitelist/add` → `whitelist_add`
+  - `whitelist/remove` → `whitelist_remove`
+  - `whitelist/list` → `whitelist_list`
+  - `whitelist/check` → `whitelist_check`
+- Updated all method routing to match new tool names
+- Updated documentation to reflect new naming convention
+
+### Added
+- Comprehensive MCP Python development guide with all lessons learned from v1.1.x
+- Added tool naming best practices to documentation
+
+### Fixed
+- Resolved "string should match pattern" errors for tool names in Claude Desktop
+
 ## [1.1.8] - 2025-07-17
 
 ### Fixed

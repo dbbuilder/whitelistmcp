@@ -146,10 +146,10 @@ class MCPHandler:
             "tools/list": self._handle_tools_list,
             "resources/list": self._handle_resources_list,
             "prompts/list": self._handle_prompts_list,
-            "whitelist/add": self._handle_whitelist_add,
-            "whitelist/remove": self._handle_whitelist_remove,
-            "whitelist/list": self._handle_whitelist_list,
-            "whitelist/check": self._handle_whitelist_check
+            "whitelist_add": self._handle_whitelist_add,
+            "whitelist_remove": self._handle_whitelist_remove,
+            "whitelist_list": self._handle_whitelist_list,
+            "whitelist_check": self._handle_whitelist_check
         }
     
     def handle_request(self, request: MCPRequest) -> MCPResponse:
@@ -227,7 +227,7 @@ class MCPHandler:
         
         tools = [
             {
-                "name": "whitelist/add",
+                "name": "whitelist_add",
                 "description": "Add an IP address to an AWS Security Group",
                 "inputSchema": {
                     "type": "object",
@@ -243,7 +243,7 @@ class MCPHandler:
                 }
             },
             {
-                "name": "whitelist/remove",
+                "name": "whitelist_remove",
                 "description": "Remove an IP address from an AWS Security Group",
                 "inputSchema": {
                     "type": "object",
@@ -258,7 +258,7 @@ class MCPHandler:
                 }
             },
             {
-                "name": "whitelist/list",
+                "name": "whitelist_list",
                 "description": "List all IP addresses whitelisted in an AWS Security Group",
                 "inputSchema": {
                     "type": "object",
@@ -270,7 +270,7 @@ class MCPHandler:
                 }
             },
             {
-                "name": "whitelist/check",
+                "name": "whitelist_check",
                 "description": "Check if an IP address is whitelisted in an AWS Security Group",
                 "inputSchema": {
                     "type": "object",
@@ -350,7 +350,7 @@ class MCPHandler:
         return credentials
     
     def _handle_whitelist_add(self, request: MCPRequest) -> MCPResponse:
-        """Handle whitelist/add method.
+        """Handle whitelist_add method.
         
         Args:
             request: MCP request
@@ -457,7 +457,7 @@ class MCPHandler:
             )
     
     def _handle_whitelist_remove(self, request: MCPRequest) -> MCPResponse:
-        """Handle whitelist/remove method.
+        """Handle whitelist_remove method.
         
         Args:
             request: MCP request
@@ -552,7 +552,7 @@ class MCPHandler:
             )
     
     def _handle_whitelist_list(self, request: MCPRequest) -> MCPResponse:
-        """Handle whitelist/list method.
+        """Handle whitelist_list method.
         
         Args:
             request: MCP request
@@ -613,7 +613,7 @@ class MCPHandler:
             )
     
     def _handle_whitelist_check(self, request: MCPRequest) -> MCPResponse:
-        """Handle whitelist/check method.
+        """Handle whitelist_check method.
         
         Args:
             request: MCP request

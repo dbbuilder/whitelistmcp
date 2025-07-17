@@ -130,7 +130,7 @@ def validate_example_inputs(tool: Dict[str, Any]) -> List[str]:
     # Create test inputs based on the tool
     test_cases = []
     
-    if name == "whitelist/add":
+    if name == "whitelist_add":
         test_cases = [
             # Valid minimal
             {
@@ -309,7 +309,7 @@ def main():
             
         # Pretty print one schema as example
         print("\nExample schema (whitelist/add):")
-        add_tool = next((t for t in tools if t["name"] == "whitelist/add"), None)
+        add_tool = next((t for t in tools if t["name"] == "whitelist_add"), None)
         if add_tool:
             print(json.dumps(add_tool["inputSchema"], indent=2))
         
