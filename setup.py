@@ -57,9 +57,24 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=requirements,
+    extras_require={
+        "remote": [
+            "aiohttp>=3.8.0",
+            "aiohttp-cors>=0.7.0",
+        ],
+        "dev": [
+            "pytest>=7.0.0",
+            "pytest-asyncio>=0.21.0",
+            "pytest-cov>=4.0.0",
+            "black>=23.0.0",
+            "flake8>=6.0.0",
+            "mypy>=1.0.0",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "awswhitelist=awswhitelist.main:main",
+            "awswhitelist-remote=awswhitelist.remote_server:main",
         ],
     },
     include_package_data=True,
