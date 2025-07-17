@@ -95,3 +95,6 @@ test_output/
 private/
 secrets/
 do_not_commit/
+
+# Claude Desktop config files
+claude_desktop*.json
