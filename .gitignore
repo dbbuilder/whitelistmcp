@@ -10,6 +10,7 @@ aws_credentials
 credentials
 /*venv*/
 /*test_env*/
+/test_env/
 # Logs
 logs/
 *.log
@@ -103,3 +104,6 @@ claude_desktop*.json
 *.whl
 *.tar.gz
 dist.old/
+
+# Archive folder
+/archive/
