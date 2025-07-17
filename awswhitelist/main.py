@@ -100,7 +100,7 @@ class MCPServer:
                 # Handle specific notifications if needed
                 if request.method == "notifications/initialized":
                     self.logger.info("Client initialized")
-                return ""  # No response for notifications
+                return None  # No response for notifications
             
             # Log request
             self.logger.info("Processing request", extra={
@@ -154,9 +154,10 @@ class MCPServer:
                 # Process request
                 response = self.process_request(line)
                 
-                # Write response
-                print(response)
-                sys.stdout.flush()
+                # Write response only if not None (notifications return None)
+                if response is not None:
+                    print(response)
+                    sys.stdout.flush()
                 
         except KeyboardInterrupt:
             self.logger.info("Server interrupted by user")
