@@ -3,6 +3,7 @@
 from typing import Dict, Any, Optional, Callable, List, Union
 from pydantic import BaseModel, field_validator
 
+from awswhitelist import __version__
 from awswhitelist.config import Config, get_port_number
 from awswhitelist.utils.credential_validator import (
     AWSCredentials,
@@ -198,7 +199,7 @@ class MCPHandler:
                 },
                 "serverInfo": {
                     "name": "awswhitelist",
-                    "version": "1.1.6"
+                    "version": __version__
                 }
             }
         )

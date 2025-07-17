@@ -3,6 +3,11 @@
 from setuptools import setup, find_packages
 import os
 
+# Read version
+version = {}
+with open("awswhitelist/__version__.py") as fp:
+    exec(fp.read(), version)
+
 # Read long description
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -24,7 +29,7 @@ else:
 
 setup(
     name="awswhitelist_mcp",
-    version="1.1.6",
+    version=version["__version__"],
     author="DBBuilder",
     author_email="dbbuilderio@gmail.com",
     description="MCP server for AWS Security Group IP whitelisting with stateless credential handling",

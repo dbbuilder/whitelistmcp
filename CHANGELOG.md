@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2025-07-17
+
+### Added
+- Centralized version management in `__version__.py`
+- Created comprehensive MCP Python stdout/stderr guide documenting lessons learned
+
+### Changed
+- Version is now maintained in a single location for easier updates
+- `--version` flag now shows correct version instead of hardcoded 0.1.0
+- All version references now use the centralized `__version__` import
+
+### Fixed
+- Fixed version display in command line (`awswhitelist --version`)
+
 ## [1.1.6] - 2025-07-17
 
 ### Fixed

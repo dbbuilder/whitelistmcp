@@ -6,6 +6,7 @@ import argparse
 from typing import Dict, Any, Optional
 from pathlib import Path
 
+from awswhitelist import __version__
 from awswhitelist.config import load_config
 from awswhitelist.utils.logging import setup_logging, get_logger
 from awswhitelist.mcp.handler import (
@@ -191,7 +192,7 @@ def main():
         "--version",
         help="Show version",
         action="version",
-        version="%(prog)s 0.1.0"
+        version=f"%(prog)s {__version__}"
     )
     
     args = parser.parse_args()
