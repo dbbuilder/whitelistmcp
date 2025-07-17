@@ -98,3 +98,8 @@ do_not_commit/
 
 # Claude Desktop config files
 claude_desktop*.json
+
+# Build artifacts
+*.whl
+*.tar.gz
+dist.old/
