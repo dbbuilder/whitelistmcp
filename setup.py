@@ -24,7 +24,7 @@ else:
 
 setup(
     name="awswhitelist-mcp",
-    version="1.1.1",
+    version="1.1.2",
     author="DBBuilder",
     author_email="dbbuilderio@gmail.com",
     description="MCP server for AWS Security Group IP whitelisting with stateless credential handling",

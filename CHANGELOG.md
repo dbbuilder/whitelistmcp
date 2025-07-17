@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-07-17
+
+### Added
+- Implemented MCP protocol methods for full Claude Desktop compatibility:
+  - `initialize` method returns server capabilities and version info
+  - `tools/list` method returns available whitelist tools with schemas
+  - `resources/list` method returns empty array (no resources provided)
+  - `prompts/list` method returns empty array (no prompts provided)
+- Added proper handling for MCP notifications (requests without id field)
+
+### Changed
+- Made MCPRequest id field optional to support notifications
+- Updated serverInfo version to 1.1.2
+
 ## [1.1.1] - 2025-07-17
 
 ### Fixed

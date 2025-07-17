@@ -41,7 +41,7 @@ class MCPRequest(BaseModel):
     """MCP request object."""
     
     jsonrpc: str
-    id: Union[str, int]
+    id: Optional[Union[str, int]] = None  # Notifications don't have id
     method: str
     params: Dict[str, Any] = {}
     
@@ -141,6 +141,10 @@ class MCPHandler:
         """
         self.config = config
         self.methods: Dict[str, Callable] = {
+            "initialize": self._handle_initialize,
+            "tools/list": self._handle_tools_list,
+            "resources/list": self._handle_resources_list,
+            "prompts/list": self._handle_prompts_list,
             "whitelist/add": self._handle_whitelist_add,
             "whitelist/remove": self._handle_whitelist_remove,
             "whitelist/list": self._handle_whitelist_list,
@@ -175,6 +179,134 @@ class MCPHandler:
                 "Internal error",
                 {"error": str(e)}
             )
+    
+    def _handle_initialize(self, request: MCPRequest) -> MCPResponse:
+        """Handle initialize method.
+        
+        Args:
+            request: MCP request
+        
+        Returns:
+            MCP response with server capabilities
+        """
+        return create_mcp_response(
+            request.id,
+            {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {
+                    "tools": {}
+                },
+                "serverInfo": {
+                    "name": "awswhitelist",
+                    "version": "1.1.2"
+                }
+            }
+        )
+    
+    def _handle_tools_list(self, request: MCPRequest) -> MCPResponse:
+        """Handle tools/list method.
+        
+        Args:
+            request: MCP request
+        
+        Returns:
+            MCP response with available tools
+        """
+        tools = [
+            {
+                "name": "whitelist/add",
+                "description": "Add an IP address to an AWS Security Group",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "type": "object",
+                            "properties": {
+                                "access_key_id": {"type": "string"},
+                                "secret_access_key": {"type": "string"},
+                                "region": {"type": "string"},
+                                "session_token": {"type": "string", "required": False}
+                            },
+                            "required": ["access_key_id", "secret_access_key", "region"]
+                        },
+                        "security_group_id": {"type": "string"},
+                        "ip_address": {"type": "string"},
+                        "port": {"type": "integer"},
+                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"]},
+                        "description": {"type": "string"}
+                    },
+                    "required": ["credentials", "security_group_id", "ip_address"]
+                }
+            },
+            {
+                "name": "whitelist/remove",
+                "description": "Remove an IP address from an AWS Security Group",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "credentials": {"type": "object"},
+                        "security_group_id": {"type": "string"},
+                        "ip_address": {"type": "string"},
+                        "port": {"type": "integer"},
+                        "protocol": {"type": "string"}
+                    },
+                    "required": ["credentials", "security_group_id", "ip_address"]
+                }
+            },
+            {
+                "name": "whitelist/list",
+                "description": "List all IP addresses whitelisted in an AWS Security Group",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "credentials": {"type": "object"},
+                        "security_group_id": {"type": "string"}
+                    },
+                    "required": ["credentials", "security_group_id"]
+                }
+            },
+            {
+                "name": "whitelist/check",
+                "description": "Check if an IP address is whitelisted in an AWS Security Group",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "credentials": {"type": "object"},
+                        "security_group_id": {"type": "string"},
+                        "ip_address": {"type": "string"},
+                        "port": {"type": "integer"},
+                        "protocol": {"type": "string"}
+                    },
+                    "required": ["credentials", "security_group_id", "ip_address"]
+                }
+            }
+        ]
+        
+        return create_mcp_response(request.id, {"tools": tools})
+    
+    def _handle_resources_list(self, request: MCPRequest) -> MCPResponse:
+        """Handle resources/list method.
+        
+        Args:
+            request: MCP request
+        
+        Returns:
+            MCP response with available resources (empty for this server)
+        """
+        # This server doesn't provide any resources
+        return create_mcp_response(request.id, {"resources": []})
+    
+    def _handle_prompts_list(self, request: MCPRequest) -> MCPResponse:
+        """Handle prompts/list method.
+        
+        Args:
+            request: MCP request
+        
+        Returns:
+            MCP response with available prompts (empty for this server)
+        """
+        # This server doesn't provide any prompts
+        return create_mcp_response(request.id, {"prompts": []})
     
     def _validate_credentials_param(self, params: Dict[str, Any]) -> AWSCredentials:
         """Validate and extract credentials from parameters.

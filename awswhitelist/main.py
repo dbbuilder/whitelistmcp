@@ -91,6 +91,17 @@ class MCPServer:
                 )
                 return json.dumps(response.model_dump(exclude_none=True))
             
+            # Check if this is a notification (no id field)
+            if request.id is None:
+                # Notifications don't require a response
+                self.logger.info("Processing notification", extra={
+                    "method": request.method
+                })
+                # Handle specific notifications if needed
+                if request.method == "notifications/initialized":
+                    self.logger.info("Client initialized")
+                return ""  # No response for notifications
+            
             # Log request
             self.logger.info("Processing request", extra={
                 "request_id": request.id,
