@@ -1,84 +1,74 @@
-# AWS Security Group Management System
+# AWS Whitelist MCP Server
 
 [![PyPI version](https://badge.fury.io/py/awswhitelist-mcp.svg)](https://pypi.org/project/awswhitelist-mcp/)
 [![Python versions](https://img.shields.io/pypi/pyversions/awswhitelist-mcp.svg)](https://pypi.org/project/awswhitelist-mcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MCP Protocol](https://img.shields.io/badge/MCP-1.1.10-blue.svg)](https://modelcontextprotocol.io)
 
-A comprehensive solution for managing AWS EC2 Security Group rules with environment variable configuration, Model Context Protocol (MCP) server integration, and secure credential management.
+A Model Context Protocol (MCP) server for managing AWS EC2 Security Group rules. Fully compatible with Claude Desktop and other MCP clients.
 
 ## 🚀 Features
 
-- **Environment-based Configuration**: Secure credential management using `.env` files
-- **MCP Server Integration**: Compatible with Claude Desktop and other MCP clients
-- **Flexible Rule Management**: Add, list, and manage security group rules
-- **Audit Logging**: Track all changes with timestamps and user attribution
-- **Description Formatting**: Standardized rule descriptions with timestamps
-- **Validation**: IP address and port validation with configurable rules
-- **JSON-based Interface**: Easy integration with automation tools
+- **MCP Protocol Compliance**: Full JSON-RPC 2.0 implementation with batch support
+- **Claude Desktop Integration**: Seamless integration with Claude for AWS management
+- **Stateless Design**: No credential storage - secure by design
+- **Tool-based Interface**: Add, remove, list, and check IP whitelist rules
+- **Flexible Credential Management**: Environment variables, AWS profiles, or per-request
+- **Comprehensive Validation**: IP address, port, and parameter validation
+- **Production Ready**: Error handling, logging, and timeout management
 
-## 📁 Project Structure
+## 📦 Installation
 
+### From PyPI (Recommended)
+
+```bash
+pip install awswhitelist-mcp>=1.1.10
 ```
-D:\dev2\awswhitelist2\
-├── .env                      # Environment configuration (create from .env.example)
-├── .env.example              # Template for environment variables
-├── .gitignore               # Git ignore rules
-├── config_manager.py        # Centralized configuration management
-├── test_environment.py      # Environment setup verification
-├── setup_env.bat           # Windows setup script
-├── ENV_README.md           # Environment variables documentation
-│
-├── simple_test/            # Core scripts
-│   ├── test_aws_access.py  # Test AWS connectivity
-│   ├── add_sg_rule_json.py # Original JSON-based script
-│   ├── add_sg_rule_env.py  # Environment-aware version
-│   └── ...                 # Other utility scripts
-│
-└── mcp_server/             # MCP server implementation
-    ├── server.py           # Original Python MCP server
-    ├── server_env.py       # Environment-aware MCP server
-    ├── index.ts            # TypeScript MCP server
-    └── claude_desktop_config_env.json  # Claude Desktop config
+
+### From Source
+
+```bash
+git clone https://github.com/dbbuilder/awswhitelist2.git
+cd awswhitelist2
+pip install -e .
+
 ```
 
 ## 🔧 Quick Start
 
-### Claude Desktop Integration
-
-This MCP server is fully compatible with Claude Desktop. See [CLAUDE_DESKTOP_SETUP.md](CLAUDE_DESKTOP_SETUP.md) for installation instructions.
-
-## 🔧 Quick Start
-
-### 1. Setup Environment
-
-**Windows:**
-```cmd
-setup_env.bat
-```
-
-**Manual:**
-```bash
-cp .env.example .env
-# Edit .env with your AWS credentials
-```
-
-### 2. Install Dependencies
+### 1. Install the Server
 
 ```bash
-pip install python-dotenv boto3 mcp
+pip install awswhitelist-mcp>=1.1.10
 ```
 
-### 3. Test Configuration
+### 2. Configure Claude Desktop
 
-```bash
-python test_environment.py
+Add to your Claude Desktop configuration file:
+
+```json
+{
+  "mcpServers": {
+    "awswhitelist": {
+      "command": "awswhitelist",
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-key",
+        "AWS_SECRET_ACCESS_KEY": "your-secret",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    }
+  }
+}
 ```
 
-### 4. Test AWS Connection
+### 3. Use in Claude
 
-```bash
-python simple_test/test_aws_access.py
-```
+Simply ask Claude to manage your security groups:
+- "Add my IP to security group sg-123456 for SSH access"
+- "List all rules in security group sg-123456"
+- "Remove IP 192.168.1.1 from security group sg-123456"
+
+For detailed setup instructions, see [CLAUDE_DESKTOP_SETUP.md](CLAUDE_DESKTOP_SETUP.md).
 
 ## 🔐 Environment Variables
 
@@ -100,47 +90,79 @@ DESCRIPTION_SEPARATOR=-
 DESCRIPTION_TIMESTAMP_FORMAT=%Y%m%d-%H%M
 ```
 
-## 📝 Usage Examples
+## 🛠️ Available Tools
 
-### Command Line Usage
+The MCP server provides these tools:
 
-**Add a security group rule:**
-```bash
-python simple_test/add_sg_rule_env.py '{
-  "UserName": "john_doe",
-  "UserIP": "203.0.113.45",
-  "Port": "8080",
-  "SecurityGroupID": "sg-0f0df629567eb6344",
-  "ResourceName": "WebApp"
-}'
+### `whitelist_add`
+Add an IP address to a security group.
+
+```json
+{
+  "credentials": {...},
+  "security_group_id": "sg-123456",
+  "ip_address": "192.168.1.1",
+  "port": 22,
+  "protocol": "tcp",
+  "description": "SSH access"
+}
 ```
 
-**With dry run:**
-```bash
-python simple_test/add_sg_rule_env.py --dry-run '{...}'
+### `whitelist_remove`
+Remove an IP address from a security group.
+
+### `whitelist_list`
+List all rules in a security group.
+
+### `whitelist_check`
+Check if an IP address is whitelisted.
+
+In Claude Desktop, these appear as:
+- `awswhitelist:whitelist_add`
+- `awswhitelist:whitelist_remove`
+- `awswhitelist:whitelist_list`
+- `awswhitelist:whitelist_check`
+
+## 🔐 Credential Management
+
+### Option 1: Environment Variables
+```json
+{
+  "mcpServers": {
+    "awswhitelist": {
+      "command": "awswhitelist",
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-key",
+        "AWS_SECRET_ACCESS_KEY": "your-secret",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    }
+  }
+}
 ```
 
-**Using different environment file:**
-```bash
-python simple_test/add_sg_rule_env.py --env-file .env.production '{...}'
+### Option 2: AWS Profile
+```json
+{
+  "mcpServers": {
+    "awswhitelist": {
+      "command": "awswhitelist",
+      "env": {
+        "AWS_PROFILE": "production"
+      }
+    }
+  }
+}
 ```
 
-### MCP Server with Claude Desktop
+### Option 3: Per-Request
+Claude will prompt for credentials when needed.
 
-1. **Configure Claude Desktop:**
-   - Copy configuration from `mcp_server/claude_desktop_config_env.json`
-   - Add to `%APPDATA%\Claude\claude_desktop_config.json`
-
-2. **Restart Claude Desktop**
-
-3. **Use in Claude:**
-   ```
-   Add IP 192.168.1.100 to security group sg-0f0df629567eb6344 on port 8080
-   ```
+For advanced patterns, see [MCP_CREDENTIAL_PATTERNS.md](MCP_CREDENTIAL_PATTERNS.md).
 
 ## 🛡️ Security Best Practices
 
-1. **Never commit `.env` files** - Use `.env.example` as template
+1. **Never store credentials in config files**
 2. **Use IAM roles** when running on AWS infrastructure
 3. **Rotate credentials** regularly
 4. **Minimal permissions** - Only grant required EC2 permissions:
@@ -148,103 +170,96 @@ python simple_test/add_sg_rule_env.py --env-file .env.production '{...}'
    - `ec2:AuthorizeSecurityGroupIngress`
    - `ec2:RevokeSecurityGroupIngress`
 
-## 📊 Description Format
-
-Rules are created with standardized descriptions:
-```
-{ResourceName} - {Port}-auto-{UserName}-YYYYMMDD-HHMM
-```
-
-Example: `WebApp - 8080-auto-john_doe-20250711-1430`
-
 ## 🧪 Testing
 
-**Test environment setup:**
+### Test the MCP Server
+
 ```bash
-python test_environment.py
+# Test initialization
+echo '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{}}' | awswhitelist
+
+# List available tools
+echo '{"jsonrpc":"2.0","method":"tools/list","id":2,"params":{}}' | awswhitelist
 ```
 
-**Test AWS connectivity:**
-```bash
-python simple_test/test_aws_access.py
-```
+### Run Compliance Tests
 
-**Test MCP server locally:**
 ```bash
-python mcp_server/server_env.py
+# Check MCP compliance
+python MCP_DIAGNOSTIC_SCRIPT.py awswhitelist
 ```
 
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
-1. **Module not found:**
-   ```bash
-   pip install python-dotenv boto3 mcp
-   ```
+1. **"Method not found: tools/call"**
+   - Update to version 1.1.10 or later
+   - Restart Claude Desktop
 
-2. **AWS credentials error:**
-   - Check `.env` file exists and has correct values
-   - Verify no extra spaces or quotes
-   - Test with AWS CLI: `aws sts get-caller-identity`
+2. **"Unexpected end of JSON input"**
+   - Update to version 1.1.6 or later
+   - Check for debug output to stdout
 
-3. **Permission denied:**
+3. **AWS credentials error:**
+   - Verify environment variables are set
+   - Test with: `aws sts get-caller-identity`
+
+4. **Permission denied:**
    - Ensure IAM user has required EC2 permissions
-   - Check security group exists and is accessible
+   - Check security group exists in the correct region
 
-### Debug Mode
+### Enable Debug Logging
 
-Set environment variable:
-```env
-MCP_LOG_LEVEL=DEBUG
+```json
+{
+  "mcpServers": {
+    "awswhitelist": {
+      "command": "awswhitelist",
+      "args": ["-v"]
+    }
+  }
+}
 ```
 
-## 📚 Advanced Usage
+## 📚 MCP Protocol Compliance
 
-### Multiple Environments
+This server implements:
+- ✅ JSON-RPC 2.0 protocol
+- ✅ Batch request support
+- ✅ Standard `tools/call` method
+- ✅ Request ID tracking
+- ✅ Proper notification handling
+- ✅ Comprehensive error codes
 
-```bash
-# Development
-ENV_FILE=.env.dev python simple_test/add_sg_rule_env.py ...
+For compliance details, see:
+- [MCP_COMPLIANCE_CHECKLIST.md](MCP_COMPLIANCE_CHECKLIST.md)
+- [MCP_COMPLIANCE_REPORT.md](MCP_COMPLIANCE_REPORT.md)
 
-# Production  
-ENV_FILE=.env.prod python simple_test/add_sg_rule_env.py ...
-```
+## 📖 Documentation
 
-### Programmatic Usage
-
-```python
-from config_manager import get_config
-import boto3
-
-# Load configuration
-config = get_config()
-aws_config = config.get_aws_client_config()
-
-# Create EC2 client
-ec2 = boto3.client('ec2', **aws_config)
-
-# Use configuration values
-description = config.format_description("App", "8080", "user")
-```
+- [CLAUDE_DESKTOP_SETUP.md](CLAUDE_DESKTOP_SETUP.md) - Detailed Claude Desktop setup
+- [MCP_CREDENTIAL_PATTERNS.md](MCP_CREDENTIAL_PATTERNS.md) - Credential management patterns
+- [MCP_COMPLIANCE_CHECKLIST.md](MCP_COMPLIANCE_CHECKLIST.md) - MCP development guide
+- [MCP_PYTHON_STDOUT_GUIDE.md](MCP_PYTHON_STDOUT_GUIDE.md) - Python MCP best practices
 
 ## 🤝 Contributing
 
-1. Create feature branch
-2. Make changes
-3. Test thoroughly
-4. Submit pull request
+1. Fork the repository
+2. Create a feature branch
+3. Run compliance tests
+4. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+MIT License - see [LICENSE](LICENSE) file.
 
-## 🆘 Support
+## 🏷️ Version History
 
-- Check [ENV_README.md](ENV_README.md) for environment configuration
-- Review [TODO.md](simple_test/TODO.md) for roadmap
-- See [FUTURE.md](simple_test/FUTURE.md) for enhancement ideas
+- **v1.1.10** - Added `tools/call` support and batch requests
+- **v1.1.9** - Updated tool naming convention
+- **v1.1.8** - Fixed JSON schema validation
+- **v1.1.7** - Centralized version management
+- **v1.1.6** - Fixed notification handling
 
----
-
-**Note:** Remember to keep your AWS credentials secure and never commit them to version control!
+See [CHANGELOG.md](CHANGELOG.md) for full history.

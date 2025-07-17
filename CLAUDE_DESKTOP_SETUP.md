@@ -6,9 +6,9 @@ This guide explains how to install and configure the AWS Whitelisting MCP Server
 
 ### Option 1: Install from PyPI (Recommended)
 
-1. Install the package:
+1. Install the package (version 1.1.10 or later required):
    ```bash
-   pip install awswhitelist-mcp
+   pip install awswhitelist-mcp>=1.1.10
    ```
 
 2. Add to Claude Desktop configuration:
@@ -107,33 +107,24 @@ Once configured, you can use the MCP server in Claude by making requests like:
 Add my current IP to security group sg-123456789 for HTTPS access
 ```
 
-Claude will translate this to the appropriate MCP call:
+Claude will use the MCP tools with the following format:
+- Tool names appear as `awswhitelist:whitelist_add` in Claude Desktop
+- The server implements the standard `tools/call` method for execution
 
-```json
-{
-  "method": "whitelist/add",
-  "params": {
-    "credentials": {
-      "access_key_id": "YOUR_KEY",
-      "secret_access_key": "YOUR_SECRET",
-      "region": "us-east-1"
-    },
-    "security_group_id": "sg-123456789",
-    "port": 443,
-    "protocol": "tcp",
-    "description": "HTTPS access"
-  }
-}
-```
+## Available Tools
 
-## Available Methods
+The server provides these MCP tools:
 
-The server provides these MCP methods:
+1. **whitelist_add** - Add an IP to a security group
+2. **whitelist_remove** - Remove an IP from a security group
+3. **whitelist_list** - List all rules in a security group
+4. **whitelist_check** - Check if an IP is whitelisted
 
-1. **whitelist/add** - Add an IP to a security group
-2. **whitelist/remove** - Remove an IP from a security group
-3. **whitelist/list** - List all rules in a security group
-4. **whitelist/check** - Check if an IP is whitelisted
+In Claude Desktop, these appear with the server prefix:
+- `awswhitelist:whitelist_add`
+- `awswhitelist:whitelist_remove`
+- `awswhitelist:whitelist_list`
+- `awswhitelist:whitelist_check`
 
 ## Security Notes
 
@@ -142,7 +133,41 @@ The server provides these MCP methods:
 - Claude Desktop will handle credential prompting
 - Consider using AWS IAM roles or temporary credentials
 
-For detailed information on how to provide credentials, see [CREDENTIALS_GUIDE.md](CREDENTIALS_GUIDE.md)
+### Credential Management Options
+
+1. **Environment Variables** (Recommended for development):
+   ```json
+   {
+     "mcpServers": {
+       "awswhitelist": {
+         "command": "awswhitelist",
+         "env": {
+           "AWS_ACCESS_KEY_ID": "your-key",
+           "AWS_SECRET_ACCESS_KEY": "your-secret",
+           "AWS_DEFAULT_REGION": "us-east-1"
+         }
+       }
+     }
+   }
+   ```
+
+2. **AWS Profile**:
+   ```json
+   {
+     "mcpServers": {
+       "awswhitelist": {
+         "command": "awswhitelist",
+         "env": {
+           "AWS_PROFILE": "production"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Per-Request Credentials**: Claude will prompt for credentials when needed
+
+For detailed credential patterns, see [MCP_CREDENTIAL_PATTERNS.md](MCP_CREDENTIAL_PATTERNS.md)
 
 ## Troubleshooting
 
@@ -169,15 +194,21 @@ Add verbose flag to see detailed logs:
 Test the server directly:
 
 ```bash
-echo '{"jsonrpc":"2.0","method":"whitelist/list","id":"test","params":{"credentials":{"access_key_id":"YOUR_KEY","secret_access_key":"YOUR_SECRET","region":"us-east-1"},"security_group_id":"sg-123456"}}' | awswhitelist
+# Test initialization
+echo '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{"protocolVersion":"2024-11-05"}}' | awswhitelist
+
+# Test tools list
+echo '{"jsonrpc":"2.0","method":"tools/list","id":2,"params":{}}' | awswhitelist
 ```
 
 ### Common Issues
 
-1. **Import errors**: Ensure all dependencies are installed
-2. **Permission errors**: Check AWS IAM permissions
-3. **Connection errors**: Verify network connectivity to AWS
-4. **Invalid JSON**: Enable verbose logging to debug
+1. **"Method not found: tools/call"**: Update to version 1.1.10 or later
+2. **Import errors**: Ensure all dependencies are installed with `pip install awswhitelist-mcp`
+3. **Permission errors**: Check AWS IAM permissions
+4. **Connection errors**: Verify network connectivity to AWS
+5. **Invalid JSON**: Enable verbose logging to debug
+6. **"Unexpected end of JSON input"**: Update to version 1.1.6 or later
 
 ## Environment Variables
 
