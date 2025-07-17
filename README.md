@@ -68,7 +68,7 @@ Simply ask Claude to manage your security groups:
 - "List all rules in security group sg-123456"
 - "Remove IP 192.168.1.1 from security group sg-123456"
 
-For detailed setup instructions, see [CLAUDE_DESKTOP_SETUP.md](CLAUDE_DESKTOP_SETUP.md).
+For detailed setup instructions, see [CLAUDE_DESKTOP_SETUP.md](docs/CLAUDE_DESKTOP_SETUP.md).
 
 ## 🔐 Environment Variables
 
@@ -158,7 +158,7 @@ In Claude Desktop, these appear as:
 ### Option 3: Per-Request
 Claude will prompt for credentials when needed.
 
-For advanced patterns, see [MCP_CREDENTIAL_PATTERNS.md](MCP_CREDENTIAL_PATTERNS.md).
+For advanced patterns, see [MCP_CREDENTIAL_PATTERNS.md](docs/MCP_CREDENTIAL_PATTERNS.md).
 
 ## 🛡️ Security Best Practices
 
@@ -233,15 +233,15 @@ This server implements:
 - ✅ Comprehensive error codes
 
 For compliance details, see:
-- [MCP_COMPLIANCE_CHECKLIST.md](MCP_COMPLIANCE_CHECKLIST.md)
-- [MCP_COMPLIANCE_REPORT.md](MCP_COMPLIANCE_REPORT.md)
+- [MCP_COMPLIANCE_CHECKLIST.md](docs/MCP_COMPLIANCE_CHECKLIST.md)
+- [MCP_COMPLIANCE_REPORT.md](docs/MCP_COMPLIANCE_REPORT.md)
 
 ## 📖 Documentation
 
-- [CLAUDE_DESKTOP_SETUP.md](CLAUDE_DESKTOP_SETUP.md) - Detailed Claude Desktop setup
-- [MCP_CREDENTIAL_PATTERNS.md](MCP_CREDENTIAL_PATTERNS.md) - Credential management patterns
-- [MCP_COMPLIANCE_CHECKLIST.md](MCP_COMPLIANCE_CHECKLIST.md) - MCP development guide
-- [MCP_PYTHON_STDOUT_GUIDE.md](MCP_PYTHON_STDOUT_GUIDE.md) - Python MCP best practices
+- [CLAUDE_DESKTOP_SETUP.md](docs/CLAUDE_DESKTOP_SETUP.md) - Detailed Claude Desktop setup
+- [MCP_CREDENTIAL_PATTERNS.md](docs/MCP_CREDENTIAL_PATTERNS.md) - Credential management patterns
+- [MCP_COMPLIANCE_CHECKLIST.md](docs/MCP_COMPLIANCE_CHECKLIST.md) - MCP development guide
+- [MCP_PYTHON_STDOUT_GUIDE.md](docs/MCP_PYTHON_STDOUT_GUIDE.md) - Python MCP best practices
 
 ## 🤝 Contributing
 
