@@ -7,8 +7,12 @@ This guide explains how to deploy the AWS Whitelisting MCP Server for remote acc
 ### 1. Install with Remote Support
 
 ```bash
-# Install with remote server dependencies
+# Option 1: Install with remote extras
 pip install awswhitelist-mcp[remote]
+
+# Option 2: Install from requirements-remote.txt
+pip install -r requirements-remote.txt
+pip install -e .
 ```
 
 ### 2. Run as Remote Server
