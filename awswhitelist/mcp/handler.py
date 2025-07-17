@@ -213,6 +213,18 @@ class MCPHandler:
         Returns:
             MCP response with available tools
         """
+        # Define credential schema once for reuse
+        credential_schema = {
+            "type": "object",
+            "properties": {
+                "access_key_id": {"type": "string"},
+                "secret_access_key": {"type": "string"},
+                "region": {"type": "string"},
+                "session_token": {"type": "string"}
+            },
+            "required": ["access_key_id", "secret_access_key", "region"]
+        }
+        
         tools = [
             {
                 "name": "whitelist/add",
@@ -220,21 +232,12 @@ class MCPHandler:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "access_key_id": {"type": "string"},
-                                "secret_access_key": {"type": "string"},
-                                "region": {"type": "string"},
-                                "session_token": {"type": "string", "required": False}
-                            },
-                            "required": ["access_key_id", "secret_access_key", "region"]
-                        },
-                        "security_group_id": {"type": "string"},
-                        "ip_address": {"type": "string"},
-                        "port": {"type": "integer"},
-                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"]},
-                        "description": {"type": "string"}
+                        "credentials": credential_schema,
+                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "ip_address": {"type": "string", "description": "IP address or CIDR block to whitelist"},
+                        "port": {"type": "integer", "description": "Port number (default: 443)", "minimum": 1, "maximum": 65535},
+                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"], "description": "Protocol (default: tcp)"},
+                        "description": {"type": "string", "description": "Description for the security group rule"}
                     },
                     "required": ["credentials", "security_group_id", "ip_address"]
                 }
@@ -245,11 +248,11 @@ class MCPHandler:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "credentials": {"type": "object"},
-                        "security_group_id": {"type": "string"},
-                        "ip_address": {"type": "string"},
-                        "port": {"type": "integer"},
-                        "protocol": {"type": "string"}
+                        "credentials": credential_schema,
+                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "ip_address": {"type": "string", "description": "IP address or CIDR block to remove"},
+                        "port": {"type": "integer", "description": "Port number (optional, remove all ports if not specified)", "minimum": 1, "maximum": 65535},
+                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"], "description": "Protocol (optional, default: tcp)"}
                     },
                     "required": ["credentials", "security_group_id", "ip_address"]
                 }
@@ -260,8 +263,8 @@ class MCPHandler:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "credentials": {"type": "object"},
-                        "security_group_id": {"type": "string"}
+                        "credentials": credential_schema,
+                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"}
                     },
                     "required": ["credentials", "security_group_id"]
                 }
@@ -272,11 +275,11 @@ class MCPHandler:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "credentials": {"type": "object"},
-                        "security_group_id": {"type": "string"},
-                        "ip_address": {"type": "string"},
-                        "port": {"type": "integer"},
-                        "protocol": {"type": "string"}
+                        "credentials": credential_schema,
+                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "ip_address": {"type": "string", "description": "IP address or CIDR block to check"},
+                        "port": {"type": "integer", "description": "Port number to check (optional, check all ports if not specified)", "minimum": 1, "maximum": 65535},
+                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"], "description": "Protocol to check (optional, default: tcp)"}
                     },
                     "required": ["credentials", "security_group_id", "ip_address"]
                 }
