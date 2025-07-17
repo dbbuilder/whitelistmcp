@@ -1,6 +1,7 @@
 """Configuration management for AWS Whitelisting MCP Server."""
 
 import os
+import sys
 import json
 import re
 from pathlib import Path
@@ -169,7 +170,7 @@ def load_config(config_path: Optional[str] = None) -> Config:
                 config_dict = file_config  # Replace entire dict, not update
         except Exception as e:
             # Log error but continue with defaults
-            print(f"Warning: Failed to load config file {config_path}: {e}")
+            print(f"Warning: Failed to load config file {config_path}: {e}", file=sys.stderr)
     
     # Create config object
     config = Config.from_dict(config_dict)
@@ -182,7 +183,7 @@ def load_config(config_path: Optional[str] = None) -> Config:
         try:
             config.default_parameters.port = int(os.environ["AWS_WHITELIST_PORT"])
         except ValueError:
-            print(f"Warning: Invalid port in AWS_WHITELIST_PORT: {os.environ['AWS_WHITELIST_PORT']}")
+            print(f"Warning: Invalid port in AWS_WHITELIST_PORT: {os.environ['AWS_WHITELIST_PORT']}", file=sys.stderr)
     
     if "AWS_WHITELIST_PROTOCOL" in os.environ:
         config.default_parameters.protocol = os.environ["AWS_WHITELIST_PROTOCOL"]
@@ -191,7 +192,7 @@ def load_config(config_path: Optional[str] = None) -> Config:
         try:
             config.security_settings.rate_limit_per_minute = int(os.environ["AWS_WHITELIST_RATE_LIMIT"])
         except ValueError:
-            print(f"Warning: Invalid rate limit in AWS_WHITELIST_RATE_LIMIT: {os.environ['AWS_WHITELIST_RATE_LIMIT']}")
+            print(f"Warning: Invalid rate limit in AWS_WHITELIST_RATE_LIMIT: {os.environ['AWS_WHITELIST_RATE_LIMIT']}", file=sys.stderr)
     
     return config
 
