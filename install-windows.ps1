@@ -60,8 +60,8 @@ if (-not $pipInstalled) {
 
 # Install from PyPI
 Write-Host ""
-Write-Host "Installing AWS Whitelisting MCP Server from PyPI..." -ForegroundColor Green
-$installResult = python -m pip install --user awswhitelist-mcp 2>&1
+Write-Host "Installing/Updating AWS Whitelisting MCP Server from PyPI..." -ForegroundColor Green
+$installResult = python -m pip install --user --upgrade awswhitelist_mcp 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Package installed successfully!" -ForegroundColor Green
 } else {

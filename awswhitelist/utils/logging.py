@@ -42,10 +42,16 @@ def setup_logging(
             datefmt="%Y-%m-%d %H:%M:%S"
         )
     
-    # Console handler - use stderr for MCP compliance
-    console_handler = logging.StreamHandler(sys.stderr)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    # DISABLE console handler for MCP compliance
+    # MCP servers must not output anything to stdout except JSON-RPC responses
+    # Even stderr logging can cause issues on Windows
+    # console_handler = logging.StreamHandler()
+    # console_handler.stream = sys.stderr  # Force stream to stderr
+    # console_handler.setFormatter(formatter)
+    # logger.addHandler(console_handler)
+    
+    # Ensure no propagation to root logger
+    logger.propagate = False
     
     # File handler (if specified)
     if log_file:
