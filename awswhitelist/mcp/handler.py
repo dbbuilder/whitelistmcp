@@ -1,6 +1,6 @@
 """MCP protocol handler for AWS whitelisting operations."""
 
-from typing import Dict, Any, Optional, Callable, List
+from typing import Dict, Any, Optional, Callable, List, Union
 from pydantic import BaseModel, field_validator
 
 from awswhitelist.config import Config, get_port_number
@@ -41,7 +41,7 @@ class MCPRequest(BaseModel):
     """MCP request object."""
     
     jsonrpc: str
-    id: str
+    id: Union[str, int]
     method: str
     params: Dict[str, Any] = {}
     
@@ -57,7 +57,7 @@ class MCPResponse(BaseModel):
     """MCP response object."""
     
     jsonrpc: str = "2.0"
-    id: str
+    id: Union[str, int]
     result: Optional[Dict[str, Any]] = None
     error: Optional[MCPError] = None
     
@@ -104,7 +104,7 @@ def create_mcp_response(request_id: str, result: Dict[str, Any]) -> MCPResponse:
 
 
 def create_mcp_error(
-    request_id: str,
+    request_id: Union[str, int],
     code: int,
     message: str,
     data: Optional[Any] = None
