@@ -144,8 +144,17 @@ class MCPHandler:
         self.methods: Dict[str, Callable] = {
             "initialize": self._handle_initialize,
             "tools/list": self._handle_tools_list,
+            "tools/call": self._handle_tools_call,
             "resources/list": self._handle_resources_list,
             "prompts/list": self._handle_prompts_list,
+            "whitelist_add": self._handle_whitelist_add,
+            "whitelist_remove": self._handle_whitelist_remove,
+            "whitelist_list": self._handle_whitelist_list,
+            "whitelist_check": self._handle_whitelist_check
+        }
+        
+        # Map tool names to handlers for tools/call dispatch
+        self.tool_handlers = {
             "whitelist_add": self._handle_whitelist_add,
             "whitelist_remove": self._handle_whitelist_remove,
             "whitelist_list": self._handle_whitelist_list,
@@ -311,6 +320,49 @@ class MCPHandler:
         """
         # This server doesn't provide any prompts
         return create_mcp_response(request.id, {"prompts": []})
+    
+    def _handle_tools_call(self, request: MCPRequest) -> MCPResponse:
+        """Handle tools/call method.
+        
+        Args:
+            request: MCP request with tool name and arguments
+        
+        Returns:
+            MCP response with tool execution result
+        """
+        params = request.params
+        
+        # Validate required parameters
+        if "name" not in params:
+            return create_mcp_error(
+                request.id,
+                ERROR_INVALID_PARAMS,
+                "Missing required parameter: name"
+            )
+        
+        tool_name = params["name"]
+        
+        # Check if tool exists
+        if tool_name not in self.tool_handlers:
+            return create_mcp_error(
+                request.id,
+                ERROR_METHOD_NOT_FOUND,
+                f"Tool not found: {tool_name}"
+            )
+        
+        # Get tool arguments
+        tool_args = params.get("arguments", {})
+        
+        # Create a new request with the tool's parameters
+        tool_request = MCPRequest(
+            jsonrpc="2.0",
+            id=request.id,
+            method=tool_name,
+            params=tool_args
+        )
+        
+        # Dispatch to the appropriate tool handler
+        return self.tool_handlers[tool_name](tool_request)
     
     def _validate_credentials_param(self, params: Dict[str, Any]) -> AWSCredentials:
         """Validate and extract credentials from parameters.

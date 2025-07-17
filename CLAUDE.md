@@ -10,7 +10,8 @@ AWS Whitelisting MCP Server is a Model Context Protocol (MCP) server that manage
 
 ### 1. MCP Protocol Layer (`awswhitelist/mcp/`)
 - `handler.py`: Implements MCP request/response handling with JSON-RPC 2.0 format
-- Methods: `whitelist_add`, `whitelist_remove`, `whitelist_list`, `whitelist_check`
+- Methods: `tools/call` (standard MCP method), `tools/list`, `initialize`
+- Tool names: `whitelist_add`, `whitelist_remove`, `whitelist_list`, `whitelist_check`
 - Stateless design - credentials passed with each request
 
 ### 2. AWS Service Layer (`awswhitelist/aws/`)

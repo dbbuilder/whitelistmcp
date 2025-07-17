@@ -3,7 +3,7 @@
 import sys
 import json
 import argparse
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 
 from awswhitelist import __version__
@@ -41,39 +41,75 @@ class MCPServer:
         # Create MCP handler
         self.handler = MCPHandler(self.config)
         
+        # Track used request IDs for uniqueness validation
+        self.used_ids: set = set()
+        
         self.logger.info("MCP server initialized", extra={
             "config_path": config_path,
             "region": self.config.default_parameters.region
         })
     
-    def process_request(self, request_data: str) -> str:
-        """Process a single MCP request.
+    def process_request(self, request_data: str) -> Optional[str]:
+        """Process a single MCP request or batch of requests.
         
         Args:
             request_data: JSON-formatted request string
         
         Returns:
-            JSON-formatted response string
+            JSON-formatted response string or None for notifications
         """
-        request_id = "unknown"
-        
         try:
             # Parse JSON
-            try:
-                request_dict = json.loads(request_data)
-                request_id = request_dict.get("id", "unknown")
-            except json.JSONDecodeError as e:
-                self.logger.error("JSON parse error", extra={
-                    "error": str(e),
-                    "request": request_data[:200]  # Log first 200 chars
-                })
-                response = create_mcp_error(
-                    request_id,
-                    ERROR_PARSE,
-                    "Parse error",
-                    {"error": str(e)}
-                )
-                return json.dumps(response.model_dump(exclude_none=True))
+            data = json.loads(request_data)
+            
+            # Check if this is a batch request
+            if isinstance(data, list):
+                # Process batch request
+                responses = []
+                for single_request in data:
+                    response = self._process_single_request(single_request)
+                    if response is not None:  # Don't include notification responses
+                        responses.append(json.loads(response))
+                
+                # Return batch response only if there are responses
+                return json.dumps(responses) if responses else None
+            else:
+                # Process single request
+                return self._process_single_request(data)
+        except json.JSONDecodeError as e:
+            self.logger.error("JSON parse error", extra={
+                "error": str(e),
+                "request": request_data[:200]  # Log first 200 chars
+            })
+            response = create_mcp_error(
+                "unknown",
+                ERROR_PARSE,
+                "Parse error",
+                {"error": str(e)}
+            )
+            return json.dumps(response.model_dump(exclude_none=True))
+        except Exception as e:
+            self.logger.exception("Unexpected error processing request")
+            response = create_mcp_error(
+                "unknown",
+                ERROR_INTERNAL,
+                "Internal error",
+                {"error": str(e)}
+            )
+            return json.dumps(response.model_dump(exclude_none=True))
+    
+    def _process_single_request(self, request_dict: Dict[str, Any]) -> Optional[str]:
+        """Process a single request object.
+        
+        Args:
+            request_dict: Parsed request dictionary
+        
+        Returns:
+            JSON response string or None for notifications
+        """
+        request_id = request_dict.get("id", "unknown")
+        
+        try:
             
             # Validate request
             try:
@@ -102,6 +138,23 @@ class MCPServer:
                 if request.method == "notifications/initialized":
                     self.logger.info("Client initialized")
                 return None  # No response for notifications
+            
+            # Validate request ID uniqueness
+            if request.id in self.used_ids:
+                self.logger.warning("Duplicate request ID", extra={
+                    "request_id": request.id,
+                    "method": request.method
+                })
+                response = create_mcp_error(
+                    request.id,
+                    ERROR_INVALID_REQUEST,
+                    "Duplicate request ID",
+                    {"id": request.id}
+                )
+                return json.dumps(response.model_dump(exclude_none=True))
+            
+            # Track this ID
+            self.used_ids.add(request.id)
             
             # Log request
             self.logger.info("Processing request", extra={

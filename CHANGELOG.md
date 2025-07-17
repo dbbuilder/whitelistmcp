@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.10] - 2025-07-17
+
+### Added
+- **Critical**: Implemented `tools/call` method for MCP protocol compliance
+- **Critical**: Added batch request support (MUST requirement per MCP spec)
+- Request ID uniqueness tracking to prevent duplicate IDs within a session
+- Comprehensive MCP compliance documentation and diagnostic tools
+
+### Fixed
+- Claude Desktop "Method not found: tools/call" error
+- MCP protocol compliance issues identified in compliance audit
+
+### Documentation
+- Added MCP_COMPLIANCE_CHECKLIST.md for server development
+- Added MCP_DIAGNOSTIC_SCRIPT.md for testing compliance
+- Added MCP_CREDENTIAL_PATTERNS.md for secure credential management
+- Added MCP_COMPLIANCE_REPORT.md with detailed audit results
+
 ## [1.1.9] - 2025-07-17
 
 ### Changed
