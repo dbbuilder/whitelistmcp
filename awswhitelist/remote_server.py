@@ -11,16 +11,18 @@ import aiohttp_cors
 
 from .main import MCPServer
 from .mcp.handler import MCPHandler
+from .config import Config
 
 logger = logging.getLogger(__name__)
 
 class RemoteMCPServer:
     """Remote MCP Server with HTTP API"""
     
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080, config: Optional[Config] = None):
         self.host = host
         self.port = port
-        self.mcp_handler = MCPHandler()
+        self.config = config or Config()
+        self.mcp_handler = MCPHandler(self.config)
         self.app = web.Application()
         self.auth_token = os.getenv("MCP_AUTH_TOKEN", "")
         self.setup_routes()
@@ -144,13 +146,19 @@ def main():
     parser.add_argument('--host', default='0.0.0.0', help='Host to bind to')
     parser.add_argument('--port', type=int, default=8080, help='Port to bind to')
     parser.add_argument('--auth-token', help='Authentication token')
+    parser.add_argument('-c', '--config', help='Path to configuration file')
     
     args = parser.parse_args()
     
     if args.auth_token:
         os.environ['MCP_AUTH_TOKEN'] = args.auth_token
     
-    server = RemoteMCPServer(host=args.host, port=args.port)
+    # Load config if provided
+    config = None
+    if args.config:
+        config = Config(config_file=args.config)
+    
+    server = RemoteMCPServer(host=args.host, port=args.port, config=config)
     server.run()
 
 if __name__ == "__main__":
