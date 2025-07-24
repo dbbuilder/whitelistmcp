@@ -4,7 +4,7 @@ import pytest
 import json
 from unittest.mock import patch, Mock
 from whitelistmcp.main import MCPServer
-from whitelistmcp.config import Config, DEFAULT_PORT_MAPPINGS
+from whitelistmcp.config import Config
 
 
 class TestEndToEnd:
@@ -13,7 +13,7 @@ class TestEndToEnd:
     @pytest.fixture
     def server(self):
         """Create server instance with test config."""
-        config = Config(port_mappings=DEFAULT_PORT_MAPPINGS)
+        config = Config()
         with patch('whitelistmcp.main.load_config', return_value=config):
             with patch('whitelistmcp.main.setup_logging') as mock_logging:
                 mock_logging.return_value = Mock()

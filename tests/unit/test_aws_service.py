@@ -280,21 +280,29 @@ class TestAWSService:
         mock_ec2 = Mock()
         mock_boto_client.return_value = mock_ec2
         
-        # Mock successful revocation
+        # Mock successful rule listing and revocation
+        mock_ec2.describe_security_groups.return_value = {
+            'SecurityGroups': [{
+                'IpPermissions': [{
+                    'IpProtocol': 'tcp',
+                    'FromPort': 443,
+                    'ToPort': 443,
+                    'IpRanges': [{'CidrIp': '192.168.1.0/24'}]
+                }]
+            }]
+        }
         mock_ec2.revoke_security_group_ingress.return_value = {
             'Return': True
         }
         
         service = AWSService(credentials)
-        rule = SecurityGroupRule(
-            group_id="sg-123456",
-            ip_protocol="tcp",
-            from_port=443,
-            to_port=443,
-            cidr_ip="192.168.1.0/24"
-        )
         
-        result = service.remove_whitelist_rule(rule)
+        result = service.remove_whitelist_rule(
+            security_group_id="sg-123456",
+            ip_address="192.168.1.0/24",
+            port=443,
+            protocol="tcp"
+        )
         
         assert result.success is True
         assert "removed" in result.message

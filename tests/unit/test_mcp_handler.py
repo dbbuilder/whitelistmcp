@@ -249,7 +249,7 @@ class TestMCPHandler:
                     "credentials": {
                         "cloud": "aws",
                         "aws_credentials": {
-                            "access_key_id": "AKIA...",
+                            "access_key_id": "AKIAIOSFODNN7EXAMPLE",
                             "secret_access_key": "secret",
                             "region": "us-east-1"
                         }
@@ -297,7 +297,7 @@ class TestMCPHandler:
             "credentials": {
                 "cloud": "aws",
                 "aws_credentials": {
-                    "access_key_id": "AKIA...",
+                    "access_key_id": "AKIAIOSFODNN7EXAMPLE",
                     "secret_access_key": "secret",
                     "region": "us-east-1"
                 }
@@ -318,7 +318,7 @@ class TestMCPHandler:
             "credentials": {
                 "cloud": "all",
                 "aws_credentials": {
-                    "access_key_id": "AKIA...",
+                    "access_key_id": "AKIAIOSFODNN7EXAMPLE",
                     "secret_access_key": "secret",
                     "region": "us-east-1"
                 },
@@ -360,7 +360,7 @@ class TestMCPHandler:
                 "credentials": {
                     "cloud": "aws",
                     "aws_credentials": {
-                        "access_key_id": "AKIA...",
+                        "access_key_id": "AKIAIOSFODNN7EXAMPLE",
                         "secret_access_key": "secret",
                         "region": "us-east-1"
                     }
@@ -400,7 +400,7 @@ class TestMCPHandler:
                 "credentials": {
                     "cloud": "aws",
                     "aws_credentials": {
-                        "access_key_id": "AKIA...",
+                        "access_key_id": "AKIAIOSFODNN7EXAMPLE",
                         "secret_access_key": "secret",
                         "region": "us-east-1"
                     }
@@ -434,11 +434,17 @@ class TestMCPHandler:
             params={}
         )
         
-        # Mock method to raise exception
-        with patch.object(handler, '_handle_initialize', side_effect=Exception("Test error")):
-            response = handler.handle_request(request)
+        # Replace the method in the handler's methods dictionary
+        original_method = handler.methods["initialize"]
+        handler.methods["initialize"] = Mock(side_effect=Exception("Test error"))
         
-        assert response.error is not None
-        assert response.error.code == ERROR_INTERNAL
-        assert "Internal error" in response.error.message
-        assert response.error.data["error"] == "Test error"
+        try:
+            response = handler.handle_request(request)
+            
+            assert response.error is not None
+            assert response.error.code == ERROR_INTERNAL
+            assert "Internal error" in response.error.message
+            assert response.error.data["error"] == "Test error"
+        finally:
+            # Restore original method
+            handler.methods["initialize"] = original_method

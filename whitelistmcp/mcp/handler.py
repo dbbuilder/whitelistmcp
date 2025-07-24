@@ -519,8 +519,7 @@ class MCPHandler:
                         client_id=azure_creds.get("client_id", ""),
                         client_secret=azure_creds.get("client_secret", ""),
                         tenant_id=azure_creds.get("tenant_id", ""),
-                        subscription_id=azure_creds.get("subscription_id", ""),
-                        region=azure_creds.get("region", self.config.default_parameters.azure_region)
+                        subscription_id=azure_creds.get("subscription_id", "")
                     )
                 except Exception as e:
                     raise ValueError(f"Invalid Azure credentials: {str(e)}")
@@ -535,8 +534,8 @@ class MCPHandler:
                     cloud_creds.gcp_credentials = GCPCredentials(
                         project_id=gcp_creds.get("project_id", ""),
                         credentials_path=gcp_creds.get("credentials_path"),
-                        region=gcp_creds.get("region", self.config.default_parameters.gcp_region),
-                        zone=gcp_creds.get("zone", self.config.default_parameters.gcp_zone)
+                        credentials_json=gcp_creds.get("credentials_json"),
+                        use_default_credential=gcp_creds.get("use_default_credential", False)
                     )
                 except Exception as e:
                     raise ValueError(f"Invalid GCP credentials: {str(e)}")
