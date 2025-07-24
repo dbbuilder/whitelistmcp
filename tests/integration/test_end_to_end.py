@@ -64,18 +64,24 @@ class TestEndToEnd:
         request = {
             "jsonrpc": "2.0",
             "id": "test-123",
-            "method": "whitelist/add",
+            "method": "tools/call",
             "params": {
-                "credentials": {
-                    "access_key_id": "AKIAIOSFODNN7EXAMPLE",
-                    "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-                    "region": "us-east-1"
-                },
-                "security_group_id": "sg-123456",
-                "ip_address": "192.168.1.1",
-                "port": "https",  # Named port
-                "protocol": "tcp",
-                "description": "Test rule for integration test"
+                "name": "whitelist_add",
+                "arguments": {
+                    "credentials": {
+                        "cloud": "aws",
+                        "aws_credentials": {
+                            "access_key_id": "AKIAIOSFODNN7EXAMPLE",
+                            "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                            "region": "us-east-1"
+                        }
+                    },
+                    "security_group_id": "sg-123456",
+                    "ip_address": "192.168.1.1",
+                    "port": "https",  # Named port
+                    "protocol": "tcp",
+                    "description": "Test rule for integration test"
+                }
             }
         }
         
@@ -160,13 +166,20 @@ class TestEndToEnd:
         request = {
             "jsonrpc": "2.0",
             "id": "test-list-123",
-            "method": "whitelist/list",
+            "method": "tools/call",
             "params": {
-                "credentials": {
-                    "access_key_id": "AKIAIOSFODNN7EXAMPLE",
-                    "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-                },
-                "security_group_id": "sg-123456"
+                "name": "whitelist_list",
+                "arguments": {
+                    "credentials": {
+                        "cloud": "aws",
+                        "aws_credentials": {
+                            "access_key_id": "AKIAIOSFODNN7EXAMPLE",
+                            "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                            "region": "us-east-1"
+                        }
+                    },
+                    "security_group_id": "sg-123456"
+                }
             }
         }
         
@@ -214,14 +227,21 @@ class TestEndToEnd:
         request = {
             "jsonrpc": "2.0",
             "id": "test-error-123",
-            "method": "whitelist/add",
+            "method": "tools/call",
             "params": {
-                "credentials": {
-                    "access_key_id": "AKIAINVALID",
-                    "secret_access_key": "invalid-secret"
-                },
-                "security_group_id": "sg-123456",
-                "ip_address": "192.168.1.1"
+                "name": "whitelist_add",
+                "arguments": {
+                    "credentials": {
+                        "cloud": "aws",
+                        "aws_credentials": {
+                            "access_key_id": "AKIAIOSFODNN7EXAMPLE",
+                            "secret_access_key": "invalid-secret",
+                            "region": "us-east-1"
+                        }
+                    },
+                    "security_group_id": "sg-123456",
+                    "ip_address": "192.168.1.1"
+                }
             }
         }
         

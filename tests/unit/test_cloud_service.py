@@ -82,6 +82,9 @@ class TestCloudServiceManager:
         config.default_parameters.port = 22
         config.default_parameters.protocol = "tcp"
         config.default_parameters.gcp_additive_only = True
+        config.default_parameters.description_template = "Rule for {service}"
+        config.default_parameters.azure_resource_group = "test-rg"
+        config.default_parameters.gcp_network = "default"
         return config
     
     @pytest.fixture
