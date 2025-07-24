@@ -29,21 +29,21 @@ class SecurityGroupRule(BaseModel):
     description: str = ""
     
     @field_validator("cidr_ip")
-    def validate_cidr(cls, v):
+    def validate_cidr(cls, v: str) -> str:
         """Validate CIDR block format."""
         if not validate_cidr_block(v):
             raise ValueError(f"Invalid CIDR block: {v}")
         return v
     
     @field_validator("from_port", "to_port")
-    def validate_ports(cls, v):
+    def validate_ports(cls, v: int) -> int:
         """Validate port numbers."""
         if not 0 <= v <= 65535:
             raise ValueError(f"Port must be between 0 and 65535, got {v}")
         return v
     
     @field_validator("ip_protocol")
-    def validate_protocol(cls, v):
+    def validate_protocol(cls, v: str) -> str:
         """Validate IP protocol."""
         valid_protocols = ["tcp", "udp", "icmp", "-1"]
         if v not in valid_protocols:
@@ -116,7 +116,7 @@ class AWSService:
         self.credentials = credentials
         self.ec2_client = self._create_ec2_client()
     
-    def _create_ec2_client(self):
+    def _create_ec2_client(self) -> Any:
         """Create EC2 client with credentials."""
         return boto3.client(
             'ec2',

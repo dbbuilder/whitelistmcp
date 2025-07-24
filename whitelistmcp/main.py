@@ -45,7 +45,9 @@ class MCPServer:
         
         self.logger.info("MCP server initialized", extra={
             "config_path": config_path,
-            "region": self.config.default_parameters.region
+            "aws_region": self.config.default_parameters.aws_region,
+            "azure_region": self.config.default_parameters.azure_region,
+            "gcp_region": self.config.default_parameters.gcp_region
         })
     
     def process_request(self, request_data: str) -> Optional[str]:
@@ -194,7 +196,7 @@ class MCPServer:
             )
             return json.dumps(response.model_dump(exclude_none=True))
     
-    def run(self):
+    def run(self) -> None:
         """Run the MCP server, reading from stdin and writing to stdout."""
         self.logger.info("MCP server started")
         
@@ -221,7 +223,7 @@ class MCPServer:
         self.logger.info("MCP server stopped")
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
         description="AWS Whitelisting MCP Server",

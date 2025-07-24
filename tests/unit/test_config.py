@@ -1,262 +1,314 @@
 """Unit tests for configuration module."""
 
 import pytest
-import os
 import json
+import os
 from pathlib import Path
 from unittest.mock import patch, mock_open
+
 from whitelistmcp.config import (
-    Config, 
-    CredentialProfile,
-    DefaultParameters,
-    SecuritySettings,
-    PortMapping,
-    load_config,
-    get_port_number
+    Config, CloudProvider, DefaultParameters, SecuritySettings,
+    PortMapping, CredentialProfile, load_config, get_port_number
 )
 
 
-class TestCredentialProfile:
-    """Test credential profile functionality."""
+class TestCloudProvider:
+    """Test CloudProvider enum."""
     
-    def test_credential_profile_creation(self):
-        """Test creating a credential profile."""
-        profile = CredentialProfile(
-            name="test-profile",
-            region="us-east-1",
-            role_arn="arn:aws:iam::123456789012:role/TestRole"
-        )
-        assert profile.name == "test-profile"
-        assert profile.region == "us-east-1"
-        assert profile.role_arn == "arn:aws:iam::123456789012:role/TestRole"
-    
-    def test_credential_profile_validation(self):
-        """Test credential profile validation."""
-        # Valid profile
-        profile = CredentialProfile(
-            name="valid-profile",
-            region="us-west-2"
-        )
-        assert profile.region == "us-west-2"
-        
-        # Invalid region format should raise error
-        with pytest.raises(ValueError):
-            CredentialProfile(
-                name="invalid-profile",
-                region="invalid-region-123"
-            )
+    def test_cloud_provider_values(self):
+        """Test CloudProvider enum values."""
+        assert CloudProvider.AWS.value == "aws"
+        assert CloudProvider.AZURE.value == "azure"
+        assert CloudProvider.GCP.value == "gcp"
+        assert CloudProvider.ALL.value == "all"
 
 
 class TestDefaultParameters:
-    """Test default parameters functionality."""
+    """Test DefaultParameters model."""
     
-    def test_default_parameters_creation(self):
-        """Test creating default parameters."""
-        params = DefaultParameters(
-            region="us-east-1",
-            port=443,
-            protocol="tcp",
-            description_template="Added by {user} on {date}"
-        )
-        assert params.region == "us-east-1"
-        assert params.port == 443
-        assert params.protocol == "tcp"
-        assert params.description_template == "Added by {user} on {date}"
-    
-    def test_default_parameters_defaults(self):
+    def test_default_values(self):
         """Test default parameter values."""
         params = DefaultParameters()
-        assert params.region == "us-east-1"
+        assert params.cloud_provider == CloudProvider.AWS
         assert params.port == 22
         assert params.protocol == "tcp"
-        assert "MCP" in params.description_template
+        assert params.aws_region == "us-east-1"
+        assert params.azure_region == "eastus"
+        assert params.gcp_region == "us-central1"
+        assert params.gcp_additive_only is True
+    
+    def test_port_validation(self):
+        """Test port number validation."""
+        # Valid port
+        params = DefaultParameters(port=443)
+        assert params.port == 443
+        
+        # Invalid ports
+        with pytest.raises(ValueError, match="Port must be between"):
+            DefaultParameters(port=0)
+        
+        with pytest.raises(ValueError, match="Port must be between"):
+            DefaultParameters(port=65536)
+    
+    def test_protocol_validation(self):
+        """Test protocol validation."""
+        # Valid protocols
+        for protocol in ["tcp", "udp", "icmp", "-1"]:
+            params = DefaultParameters(protocol=protocol)
+            assert params.protocol == protocol
+        
+        # Invalid protocol
+        with pytest.raises(ValueError, match="Invalid protocol"):
+            DefaultParameters(protocol="invalid")
+    
+    def test_aws_region_validation(self):
+        """Test AWS region format validation."""
+        # Valid regions
+        valid_regions = ["us-east-1", "eu-west-2", "ap-southeast-1"]
+        for region in valid_regions:
+            params = DefaultParameters(aws_region=region)
+            assert params.aws_region == region
+        
+        # Invalid regions
+        with pytest.raises(ValueError, match="Invalid AWS region"):
+            DefaultParameters(aws_region="invalid-region")
+    
+    def test_azure_region_validation(self):
+        """Test Azure region format validation."""
+        # Valid regions
+        valid_regions = ["eastus", "westeurope", "australiaeast"]
+        for region in valid_regions:
+            params = DefaultParameters(azure_region=region)
+            assert params.azure_region == region
+        
+        # Invalid regions
+        with pytest.raises(ValueError, match="Invalid Azure region"):
+            DefaultParameters(azure_region="invalid region")
 
 
 class TestSecuritySettings:
-    """Test security settings functionality."""
+    """Test SecuritySettings model."""
     
-    def test_security_settings_creation(self):
-        """Test creating security settings."""
-        settings = SecuritySettings(
-            require_mfa=True,
-            allowed_ip_ranges=["10.0.0.0/8", "192.168.0.0/16"],
-            max_rule_duration_hours=24,
-            rate_limit_per_minute=10,
-            enable_audit_logging=True
-        )
-        assert settings.require_mfa is True
-        assert len(settings.allowed_ip_ranges) == 2
-        assert settings.max_rule_duration_hours == 24
-        assert settings.rate_limit_per_minute == 10
-        assert settings.enable_audit_logging is True
-    
-    def test_security_settings_defaults(self):
+    def test_default_values(self):
         """Test default security settings."""
         settings = SecuritySettings()
         assert settings.require_mfa is False
         assert settings.allowed_ip_ranges == []
-        assert settings.max_rule_duration_hours == 0  # No limit
+        assert settings.max_rule_duration_hours == 0
         assert settings.rate_limit_per_minute == 60
         assert settings.enable_audit_logging is True
+    
+    def test_ip_range_validation(self):
+        """Test IP range validation."""
+        # Valid CIDR ranges
+        settings = SecuritySettings(
+            allowed_ip_ranges=["192.168.1.0/24", "10.0.0.0/8"]
+        )
+        assert len(settings.allowed_ip_ranges) == 2
+        
+        # Invalid CIDR range
+        with pytest.raises(ValueError, match="Invalid CIDR format"):
+            SecuritySettings(allowed_ip_ranges=["192.168.1.1"])
+    
+    def test_rate_limit_validation(self):
+        """Test rate limit validation."""
+        # Valid rate limit
+        settings = SecuritySettings(rate_limit_per_minute=100)
+        assert settings.rate_limit_per_minute == 100
+        
+        # Invalid rate limit
+        with pytest.raises(ValueError, match="Rate limit must be at least 1"):
+            SecuritySettings(rate_limit_per_minute=0)
 
 
 class TestPortMapping:
-    """Test port mapping functionality."""
+    """Test PortMapping model."""
     
-    def test_port_mapping_creation(self):
-        """Test creating port mappings."""
-        mapping = PortMapping(
-            name="https",
-            port=443,
-            description="HTTPS traffic"
+    def test_port_mapping(self):
+        """Test port mapping creation."""
+        mapping = PortMapping(name="ssh", port=22, description="SSH access")
+        assert mapping.name == "ssh"
+        assert mapping.port == 22
+        assert mapping.description == "SSH access"
+    
+    def test_port_validation(self):
+        """Test port validation in mapping."""
+        with pytest.raises(ValueError, match="Port must be between"):
+            PortMapping(name="invalid", port=99999)
+
+
+class TestCredentialProfile:
+    """Test CredentialProfile model."""
+    
+    def test_aws_profile(self):
+        """Test AWS credential profile."""
+        profile = CredentialProfile(
+            name="prod-aws",
+            cloud=CloudProvider.AWS,
+            aws_access_key_id="AKIAIOSFODNN7EXAMPLE",
+            aws_secret_access_key="secret",
+            aws_region="us-west-2"
         )
-        assert mapping.name == "https"
-        assert mapping.port == 443
-        assert mapping.description == "HTTPS traffic"
+        assert profile.name == "prod-aws"
+        assert profile.cloud == CloudProvider.AWS
+        assert profile.aws_region == "us-west-2"
+    
+    def test_azure_profile(self):
+        """Test Azure credential profile."""
+        profile = CredentialProfile(
+            name="prod-azure",
+            cloud=CloudProvider.AZURE,
+            azure_client_id="client-id",
+            azure_tenant_id="tenant-id",
+            azure_subscription_id="sub-id",
+            azure_region="westus"
+        )
+        assert profile.name == "prod-azure"
+        assert profile.cloud == CloudProvider.AZURE
+        assert profile.azure_region == "westus"
 
 
 class TestConfig:
-    """Test main configuration class."""
+    """Test Config model."""
     
-    def test_config_creation(self):
-        """Test creating a configuration."""
-        config = Config(
-            credential_profiles=[
-                CredentialProfile(name="default", region="us-east-1")
+    def test_default_config(self):
+        """Test default configuration."""
+        config = Config()
+        assert len(config.credential_profiles) == 0
+        assert isinstance(config.default_parameters, DefaultParameters)
+        assert isinstance(config.security_settings, SecuritySettings)
+        assert len(config.port_mappings) == 0
+    
+    def test_get_profile(self):
+        """Test getting credential profile by name."""
+        profile = CredentialProfile(name="test", cloud=CloudProvider.AWS)
+        config = Config(credential_profiles=[profile])
+        
+        assert config.get_profile("test") == profile
+        assert config.get_profile("nonexistent") is None
+    
+    def test_get_port_mapping(self):
+        """Test getting port mapping by name."""
+        mapping = PortMapping(name="https", port=443)
+        config = Config(port_mappings=[mapping])
+        
+        assert config.get_port_mapping("https") == mapping
+        assert config.get_port_mapping("nonexistent") is None
+    
+    def test_from_dict(self):
+        """Test creating config from dictionary."""
+        data = {
+            "credential_profiles": [
+                {"name": "test", "cloud": "aws"}
             ],
-            default_parameters=DefaultParameters(),
-            security_settings=SecuritySettings(),
-            port_mappings=[
-                PortMapping(name="ssh", port=22, description="SSH access")
+            "default_parameters": {
+                "port": 443,
+                "protocol": "tcp"
+            },
+            "security_settings": {
+                "rate_limit_per_minute": 120
+            },
+            "port_mappings": [
+                {"name": "https", "port": 443}
             ]
-        )
+        }
+        
+        config = Config.from_dict(data)
         assert len(config.credential_profiles) == 1
-        assert config.default_parameters.region == "us-east-1"
-        assert config.security_settings.rate_limit_per_minute == 60
+        assert config.default_parameters.port == 443
+        assert config.security_settings.rate_limit_per_minute == 120
         assert len(config.port_mappings) == 1
     
-    def test_config_get_profile(self):
-        """Test getting a profile by name."""
-        config = Config(
-            credential_profiles=[
-                CredentialProfile(name="default", region="us-east-1"),
-                CredentialProfile(name="production", region="us-west-2")
-            ]
-        )
+    def test_to_dict(self):
+        """Test converting config to dictionary."""
+        config = Config()
+        data = config.to_dict()
         
-        # Test existing profile
-        profile = config.get_profile("production")
-        assert profile is not None
-        assert profile.region == "us-west-2"
-        
-        # Test non-existing profile
-        profile = config.get_profile("non-existent")
-        assert profile is None
-    
-    def test_config_get_port_mapping(self):
-        """Test getting port mapping by name."""
-        config = Config(
-            port_mappings=[
-                PortMapping(name="https", port=443),
-                PortMapping(name="ssh", port=22)
-            ]
-        )
-        
-        # Test existing mapping
-        mapping = config.get_port_mapping("https")
-        assert mapping is not None
-        assert mapping.port == 443
-        
-        # Test non-existing mapping
-        mapping = config.get_port_mapping("telnet")
-        assert mapping is None
+        assert "credential_profiles" in data
+        assert "default_parameters" in data
+        assert "security_settings" in data
+        assert "port_mappings" in data
 
 
 class TestLoadConfig:
-    """Test configuration loading functionality."""
+    """Test load_config function."""
     
-    def test_load_config_from_file(self):
-        """Test loading configuration from file."""
-        config_data = {
-            "credential_profiles": [
-                {"name": "default", "region": "us-east-1"}
-            ],
-            "default_parameters": {
-                "region": "us-east-1",
-                "port": 443
-            },
-            "security_settings": {
-                "require_mfa": True,
-                "rate_limit_per_minute": 30
-            },
-            "port_mappings": [
-                {"name": "https", "port": 443, "description": "HTTPS"}
-            ]
-        }
-        
-        with patch("builtins.open", mock_open(read_data=json.dumps(config_data))):
-            with patch("pathlib.Path.exists", return_value=True):
-                config = load_config("test_config.json")
-            
-            assert len(config.credential_profiles) == 1
-            assert config.default_parameters.port == 443
-            assert config.security_settings.require_mfa is True
-            assert len(config.port_mappings) == 1
+    @patch("builtins.open", new_callable=mock_open, read_data='{}')
+    @patch("pathlib.Path.exists", return_value=True)
+    def test_load_empty_config(self, mock_exists, mock_file):
+        """Test loading empty config file."""
+        config = load_config("test.json")
+        assert isinstance(config, Config)
     
-    def test_load_config_file_not_found(self):
-        """Test loading configuration when file doesn't exist."""
-        with patch("pathlib.Path.exists", return_value=False):
-            config = load_config("non_existent.json")
-            
-            # Should return default config
-            assert len(config.credential_profiles) == 0
-            assert config.default_parameters.region == "us-east-1"
+    @patch("builtins.open", new_callable=mock_open, read_data='{"default_parameters": {"port": 8080}}')
+    @patch("pathlib.Path.exists", return_value=True)
+    def test_load_config_with_params(self, mock_exists, mock_file):
+        """Test loading config with parameters."""
+        config = load_config("test.json")
+        assert config.default_parameters.port == 8080
     
-    def test_load_config_from_env(self):
-        """Test loading configuration from environment variables."""
-        env_vars = {
-            "AWS_DEFAULT_REGION": "eu-west-1",
-            "WHITELIST_MCP_PORT": "8080",
-            "WHITELIST_MCP_PROTOCOL": "udp",
-            "WHITELIST_MCP_RATE_LIMIT": "120"
-        }
-        
-        with patch.dict(os.environ, env_vars):
-            config = load_config()
-            
-            assert config.default_parameters.region == "eu-west-1"
-            assert config.default_parameters.port == 8080
-            assert config.default_parameters.protocol == "udp"
-            assert config.security_settings.rate_limit_per_minute == 120
+    @patch("pathlib.Path.exists", return_value=False)
+    def test_load_config_no_file(self, mock_exists):
+        """Test loading config when file doesn't exist."""
+        config = load_config("nonexistent.json")
+        assert isinstance(config, Config)
+    
+    @patch.dict(os.environ, {
+        "CLOUD_PROVIDER": "azure",
+        "WHITELIST_MCP_PORT": "443",
+        "WHITELIST_MCP_PROTOCOL": "tcp",
+        "AWS_DEFAULT_REGION": "eu-west-1",
+        "AZURE_DEFAULT_REGION": "westeurope",
+        "GCP_DEFAULT_REGION": "europe-west1"
+    })
+    def test_load_config_env_override(self):
+        """Test environment variable overrides."""
+        config = load_config()
+        assert config.default_parameters.cloud_provider == CloudProvider.AZURE
+        assert config.default_parameters.port == 443
+        assert config.default_parameters.aws_region == "eu-west-1"
+        assert config.default_parameters.azure_region == "westeurope"
+        assert config.default_parameters.gcp_region == "europe-west1"
+    
+    @patch.dict(os.environ, {
+        "WHITELIST_MCP_PORT": "invalid",
+        "WHITELIST_MCP_RATE_LIMIT": "invalid"
+    })
+    def test_load_config_invalid_env(self, capsys):
+        """Test invalid environment variable values."""
+        config = load_config()
+        captured = capsys.readouterr()
+        assert "Warning: Invalid port" in captured.err
+        assert "Warning: Invalid rate limit" in captured.err
 
 
 class TestGetPortNumber:
-    """Test port number resolution functionality."""
+    """Test get_port_number function."""
     
-    def test_get_port_number_numeric(self):
-        """Test getting port number from numeric string."""
-        config = Config()
-        assert get_port_number("443", config) == 443
-        assert get_port_number("8080", config) == 8080
+    def test_numeric_port(self, mock_config):
+        """Test numeric port input."""
+        assert get_port_number("22", mock_config) == 22
+        assert get_port_number("443", mock_config) == 443
     
-    def test_get_port_number_from_mapping(self):
-        """Test getting port number from named mapping."""
-        config = Config(
-            port_mappings=[
-                PortMapping(name="https", port=443),
-                PortMapping(name="ssh", port=22)
-            ]
-        )
-        
-        assert get_port_number("https", config) == 443
-        assert get_port_number("ssh", config) == 22
+    def test_invalid_numeric_port(self, mock_config):
+        """Test invalid numeric port."""
+        with pytest.raises(ValueError, match="Invalid port"):
+            get_port_number("99999", mock_config)
     
-    def test_get_port_number_invalid(self):
-        """Test getting port number with invalid input."""
-        config = Config()
-        
-        with pytest.raises(ValueError):
-            get_port_number("invalid-port", config)
-        
-        with pytest.raises(ValueError):
-            get_port_number("99999", config)  # Port out of range
+    def test_common_port_names(self, mock_config):
+        """Test common port name mappings."""
+        assert get_port_number("ssh", mock_config) == 22
+        assert get_port_number("http", mock_config) == 80
+        assert get_port_number("https", mock_config) == 443
+        assert get_port_number("mysql", mock_config) == 3306
+    
+    def test_port_mapping(self, mock_config):
+        """Test custom port mapping."""
+        mapping = PortMapping(name="custom", port=9999)
+        mock_config.port_mappings = [mapping]
+        assert get_port_number("custom", mock_config) == 9999
+    
+    def test_invalid_port_name(self, mock_config):
+        """Test invalid port name."""
+        with pytest.raises(ValueError, match="Invalid port"):
+            get_port_number("nonexistent", mock_config)

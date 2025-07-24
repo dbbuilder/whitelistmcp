@@ -1,213 +1,262 @@
-"""Unit tests for AWS credential validation."""
+"""Unit tests for credential validation utilities."""
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch, MagicMock
+from botocore.exceptions import ClientError, NoCredentialsError
+
 from whitelistmcp.utils.credential_validator import (
-    validate_credentials,
-    CredentialValidationError,
     AWSCredentials,
-    validate_role_arn,
-    validate_session_token
+    validate_credentials,
+    CredentialValidationError
 )
 
 
 class TestAWSCredentials:
-    """Test AWS credentials model."""
+    """Test AWSCredentials model."""
     
-    def test_credentials_creation(self):
-        """Test creating AWS credentials."""
+    def test_valid_credentials(self):
+        """Test creating valid credentials."""
         creds = AWSCredentials(
             access_key_id="AKIAIOSFODNN7EXAMPLE",
             secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-            session_token="AQoEXAMPLEH4aoAH0gNCAPy...",
             region="us-east-1"
         )
         assert creds.access_key_id == "AKIAIOSFODNN7EXAMPLE"
         assert creds.secret_access_key == "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-        assert creds.session_token == "AQoEXAMPLEH4aoAH0gNCAPy..."
         assert creds.region == "us-east-1"
+        assert creds.session_token is None
     
-    def test_credentials_minimal(self):
-        """Test creating credentials with minimal fields."""
+    def test_credentials_with_session_token(self):
+        """Test credentials with session token."""
         creds = AWSCredentials(
             access_key_id="AKIAIOSFODNN7EXAMPLE",
-            secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+            secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            region="us-east-1",
+            session_token="AQoDYXdzEJr...<rest of token>"
         )
-        assert creds.access_key_id == "AKIAIOSFODNN7EXAMPLE"
-        assert creds.secret_access_key == "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-        assert creds.session_token is None
-        assert creds.region == "us-east-1"  # Default
+        assert creds.session_token == "AQoDYXdzEJr...<rest of token>"
     
-    def test_credentials_validation(self):
-        """Test credential field validation."""
-        # Invalid access key format
-        with pytest.raises(ValueError, match="Invalid AWS access key format"):
+    def test_invalid_access_key_format(self):
+        """Test invalid access key format."""
+        with pytest.raises(ValueError, match="Invalid access_key_id format"):
             AWSCredentials(
                 access_key_id="invalid-key",
-                secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                region="us-east-1"
+            )
+    
+    def test_empty_credentials(self):
+        """Test empty credential fields."""
+        with pytest.raises(ValueError, match="access_key_id cannot be empty"):
+            AWSCredentials(
+                access_key_id="",
+                secret_access_key="secret",
+                region="us-east-1"
             )
         
-        # Empty secret key
-        with pytest.raises(ValueError, match="Secret access key cannot be empty"):
+        with pytest.raises(ValueError, match="secret_access_key cannot be empty"):
             AWSCredentials(
                 access_key_id="AKIAIOSFODNN7EXAMPLE",
-                secret_access_key=""
+                secret_access_key="",
+                region="us-east-1"
             )
+    
+    def test_invalid_region(self):
+        """Test invalid region format."""
+        with pytest.raises(ValueError, match="Invalid region format"):
+            AWSCredentials(
+                access_key_id="AKIAIOSFODNN7EXAMPLE",
+                secret_access_key="secret",
+                region="invalid region"
+            )
+    
+    def test_model_dump(self):
+        """Test model dump excludes sensitive data."""
+        creds = AWSCredentials(
+            access_key_id="AKIAIOSFODNN7EXAMPLE",
+            secret_access_key="secret",
+            region="us-east-1"
+        )
+        dump = creds.model_dump(exclude_none=True)
+        assert "access_key_id" in dump
+        assert "secret_access_key" in dump
+        assert "region" in dump
+        assert "session_token" not in dump  # None values excluded
 
 
 class TestValidateCredentials:
-    """Test credential validation functionality."""
+    """Test validate_credentials function."""
     
     @patch('boto3.client')
-    def test_validate_valid_credentials(self, mock_boto_client):
-        """Test validating valid credentials."""
-        # Mock STS client
-        mock_sts = Mock()
+    def test_valid_credentials_without_session(self, mock_boto_client):
+        """Test validating credentials without session token."""
+        # Setup mock
+        mock_sts = MagicMock()
         mock_boto_client.return_value = mock_sts
         mock_sts.get_caller_identity.return_value = {
-            'UserId': 'AIDAI23456789EXAMPLE',
+            'UserId': 'AIDACKCEVSQ6C2EXAMPLE',
             'Account': '123456789012',
-            'Arn': 'arn:aws:iam::123456789012:user/TestUser'
+            'Arn': 'arn:aws:iam::123456789012:user/testuser'
         }
         
+        # Test
         creds = AWSCredentials(
             access_key_id="AKIAIOSFODNN7EXAMPLE",
-            secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+            secret_access_key="secret",
+            region="us-east-1"
         )
-        
         result = validate_credentials(creds)
         
-        assert result['valid'] is True
-        assert result['account_id'] == '123456789012'
-        assert result['user_arn'] == 'arn:aws:iam::123456789012:user/TestUser'
-        assert 'error' not in result
+        # Verify
+        assert result["valid"] is True
+        assert result["account_id"] == "123456789012"
+        assert result["user_arn"] == "arn:aws:iam::123456789012:user/testuser"
+        assert "error" not in result
         
-        # Verify STS was called correctly
+        # Check boto3 was called correctly
         mock_boto_client.assert_called_once_with(
             'sts',
             aws_access_key_id="AKIAIOSFODNN7EXAMPLE",
-            aws_secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-            aws_session_token=None,
+            aws_secret_access_key="secret",
             region_name="us-east-1"
         )
     
     @patch('boto3.client')
-    def test_validate_invalid_credentials(self, mock_boto_client):
-        """Test validating invalid credentials."""
-        # Mock STS client to raise exception
-        mock_sts = Mock()
-        mock_boto_client.return_value = mock_sts
-        mock_sts.get_caller_identity.side_effect = Exception("Invalid credentials")
-        
-        creds = AWSCredentials(
-            access_key_id="AKIAIOSFODNN7EXAMPLE",
-            secret_access_key="invalid-secret-key"
-        )
-        
-        result = validate_credentials(creds)
-        
-        assert result['valid'] is False
-        assert 'error' in result
-        assert 'Invalid credentials' in result['error']
-        assert 'account_id' not in result
-        assert 'user_arn' not in result
-    
-    @patch('boto3.client')
-    def test_validate_credentials_with_session_token(self, mock_boto_client):
+    def test_valid_credentials_with_session(self, mock_boto_client):
         """Test validating credentials with session token."""
-        # Mock STS client
-        mock_sts = Mock()
+        # Setup mock
+        mock_sts = MagicMock()
         mock_boto_client.return_value = mock_sts
         mock_sts.get_caller_identity.return_value = {
-            'UserId': 'AROA123DEFGHIJKLMNOP:session-name',
+            'UserId': 'AROACKCEVSQ6C2EXAMPLE:session-name',
             'Account': '123456789012',
-            'Arn': 'arn:aws:sts::123456789012:assumed-role/TestRole/session-name'
+            'Arn': 'arn:aws:sts::123456789012:assumed-role/role-name/session-name'
         }
         
+        # Test
         creds = AWSCredentials(
             access_key_id="ASIAIOSFODNN7EXAMPLE",
-            secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-            session_token="AQoEXAMPLEH4aoAH0gNCAPy..."
+            secret_access_key="secret",
+            region="us-west-2",
+            session_token="session-token"
         )
-        
         result = validate_credentials(creds)
         
-        assert result['valid'] is True
-        assert result['account_id'] == '123456789012'
-        assert result['user_arn'] == 'arn:aws:sts::123456789012:assumed-role/TestRole/session-name'
+        # Verify
+        assert result["valid"] is True
+        assert result["account_id"] == "123456789012"
+        assert "assumed-role" in result["user_arn"]
         
-        # Verify session token was passed
+        # Check boto3 was called with session token
         mock_boto_client.assert_called_once_with(
             'sts',
             aws_access_key_id="ASIAIOSFODNN7EXAMPLE",
-            aws_secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-            aws_session_token="AQoEXAMPLEH4aoAH0gNCAPy...",
-            region_name="us-east-1"
+            aws_secret_access_key="secret",
+            aws_session_token="session-token",
+            region_name="us-west-2"
         )
     
-    def test_validate_credentials_with_invalid_input(self):
-        """Test credential validation with invalid input."""
-        with pytest.raises(CredentialValidationError, match="Invalid credentials format"):
-            validate_credentials(None)
+    @patch('boto3.client')
+    def test_invalid_credentials(self, mock_boto_client):
+        """Test invalid credentials."""
+        # Setup mock
+        mock_sts = MagicMock()
+        mock_boto_client.return_value = mock_sts
+        mock_sts.get_caller_identity.side_effect = ClientError(
+            {'Error': {'Code': 'InvalidClientTokenId', 'Message': 'The security token included in the request is invalid.'}},
+            'GetCallerIdentity'
+        )
         
-        with pytest.raises(CredentialValidationError, match="Invalid credentials format"):
-            validate_credentials("not-a-credential-object")
+        # Test
+        creds = AWSCredentials(
+            access_key_id="AKIAIOSFODNN7EXAMPLE",
+            secret_access_key="invalid",
+            region="us-east-1"
+        )
+        result = validate_credentials(creds)
+        
+        # Verify
+        assert result["valid"] is False
+        assert "error" in result
+        assert "InvalidClientTokenId" in result["error"]
+    
+    @patch('boto3.client')
+    def test_no_credentials_error(self, mock_boto_client):
+        """Test handling NoCredentialsError."""
+        # Setup mock
+        mock_sts = MagicMock()
+        mock_boto_client.return_value = mock_sts
+        mock_sts.get_caller_identity.side_effect = NoCredentialsError()
+        
+        # Test
+        creds = AWSCredentials(
+            access_key_id="AKIAIOSFODNN7EXAMPLE",
+            secret_access_key="secret",
+            region="us-east-1"
+        )
+        result = validate_credentials(creds)
+        
+        # Verify
+        assert result["valid"] is False
+        assert "error" in result
+        assert "Unable to locate credentials" in result["error"]
+    
+    @patch('boto3.client')
+    def test_network_error(self, mock_boto_client):
+        """Test handling network errors."""
+        # Setup mock
+        mock_sts = MagicMock()
+        mock_boto_client.return_value = mock_sts
+        mock_sts.get_caller_identity.side_effect = ClientError(
+            {'Error': {'Code': 'RequestTimeout', 'Message': 'Request has timed out'}},
+            'GetCallerIdentity'
+        )
+        
+        # Test
+        creds = AWSCredentials(
+            access_key_id="AKIAIOSFODNN7EXAMPLE",
+            secret_access_key="secret",
+            region="us-east-1"
+        )
+        result = validate_credentials(creds)
+        
+        # Verify
+        assert result["valid"] is False
+        assert "error" in result
+        assert "RequestTimeout" in result["error"]
+    
+    @patch('boto3.client')
+    def test_unexpected_error(self, mock_boto_client):
+        """Test handling unexpected errors."""
+        # Setup mock
+        mock_boto_client.side_effect = Exception("Unexpected error")
+        
+        # Test
+        creds = AWSCredentials(
+            access_key_id="AKIAIOSFODNN7EXAMPLE",
+            secret_access_key="secret",
+            region="us-east-1"
+        )
+        result = validate_credentials(creds)
+        
+        # Verify
+        assert result["valid"] is False
+        assert "error" in result
+        assert "Unexpected error" in result["error"]
 
 
-class TestValidateRoleArn:
-    """Test role ARN validation."""
+class TestCredentialValidationError:
+    """Test CredentialValidationError exception."""
     
-    def test_valid_role_arn(self):
-        """Test validating valid role ARNs."""
-        valid_arns = [
-            "arn:aws:iam::123456789012:role/TestRole",
-            "arn:aws:iam::123456789012:role/service-role/TestServiceRole",
-            "arn:aws:iam::123456789012:role/path/to/TestRole",
-            "arn:aws-us-gov:iam::123456789012:role/TestRole",
-            "arn:aws-cn:iam::123456789012:role/TestRole"
-        ]
-        
-        for arn in valid_arns:
-            assert validate_role_arn(arn) is True
+    def test_error_creation(self):
+        """Test error creation and message."""
+        error = CredentialValidationError("Invalid credentials")
+        assert str(error) == "Invalid credentials"
+        assert isinstance(error, ValueError)
     
-    def test_invalid_role_arn(self):
-        """Test validating invalid role ARNs."""
-        invalid_arns = [
-            "not-an-arn",
-            "arn:aws:iam::123456789012:user/TestUser",  # User, not role
-            "arn:aws:s3:::bucket-name",  # S3 ARN
-            "arn:aws:iam::invalid-account:role/TestRole",  # Invalid account ID
-            "",
-            None
-        ]
-        
-        for arn in invalid_arns:
-            assert validate_role_arn(arn) is False
-
-
-class TestValidateSessionToken:
-    """Test session token validation."""
-    
-    def test_valid_session_tokens(self):
-        """Test validating valid session tokens."""
-        valid_tokens = [
-            "AQoEXAMPLEH4aoAH0gNCAPyLYsE3TYbQrNA5Ze6NMZmO6FqJLu",
-            "FwoGZXIvYXdzEPT//////////wEaDPU",
-            "IQoJb3JpZ2luX2VjEPT//////////wEaCmFw"
-        ]
-        
-        for token in valid_tokens:
-            assert validate_session_token(token) is True
-    
-    def test_invalid_session_tokens(self):
-        """Test validating invalid session tokens."""
-        invalid_tokens = [
-            "",
-            None,
-            "too-short",
-            "contains spaces in token",
-            "contains@special!characters"
-        ]
-        
-        for token in invalid_tokens:
-            assert validate_session_token(token) is False
+    def test_error_with_details(self):
+        """Test error with additional details."""
+        error = CredentialValidationError("Invalid credentials", details={"code": "InvalidToken"})
+        assert str(error) == "Invalid credentials"
+        assert hasattr(error, "details")
+        assert error.details["code"] == "InvalidToken"

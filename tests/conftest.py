@@ -181,4 +181,3 @@ def reset_singletons():
     """Reset any singletons between tests."""
     # Add any singleton resets here if needed
     yield
-EOF < /dev/null

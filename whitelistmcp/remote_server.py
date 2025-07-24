@@ -16,7 +16,14 @@ logger = logging.getLogger(__name__)
 class RemoteMCPServer:
     """Remote MCP Server with HTTP API"""
     
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080, config: Optional[Config] = None):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080, config: Optional[Config] = None) -> None:
+        """Initialize the remote MCP server.
+        
+        Args:
+            host: Host to bind to
+            port: Port to listen on
+            config: Server configuration
+        """
         self.host = host
         self.port = port
         self.config = config or Config()
@@ -26,13 +33,13 @@ class RemoteMCPServer:
         self.setup_routes()
         self.setup_cors()
     
-    def setup_routes(self):
+    def setup_routes(self) -> None:
         """Setup HTTP routes"""
         self.app.router.add_get('/health', self.health_check)
         self.app.router.add_post('/mcp', self.handle_mcp_request)
         self.app.router.add_get('/', self.index)
     
-    def setup_cors(self):
+    def setup_cors(self) -> None:
         """Setup CORS for browser-based clients"""
         cors = aiohttp_cors.setup(self.app, defaults={
             "*": aiohttp_cors.ResourceOptions(
@@ -58,7 +65,7 @@ class RemoteMCPServer:
         token = auth_header.split(' ')[1]
         return token == self.auth_token
     
-    async def index(self, request):
+    async def index(self, request: web.Request) -> web.Response:
         """Index page with server info"""
         return web.json_response({
             "service": "AWS Whitelisting MCP Server",
@@ -70,7 +77,7 @@ class RemoteMCPServer:
             }
         })
     
-    async def health_check(self, request):
+    async def health_check(self, request: web.Request) -> web.Response:
         """Health check endpoint"""
         return web.json_response({
             "status": "healthy",
@@ -79,7 +86,7 @@ class RemoteMCPServer:
             "mode": "remote"
         })
     
-    async def handle_mcp_request(self, request):
+    async def handle_mcp_request(self, request: web.Request) -> web.Response:
         """Handle HTTP MCP requests"""
         # Verify authentication
         if not self.verify_auth(request):
@@ -126,7 +133,7 @@ class RemoteMCPServer:
                 status=500
             )
     
-    def run(self):
+    def run(self) -> None:
         """Start the remote server"""
         logger.info(f"Starting Remote MCP Server on {self.host}:{self.port}")
         web.run_app(
@@ -136,7 +143,7 @@ class RemoteMCPServer:
             print=lambda x: None  # Suppress aiohttp startup messages
         )
 
-def main():
+def main() -> None:
     """Main entry point for remote server"""
     import argparse
     

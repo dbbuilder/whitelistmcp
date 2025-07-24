@@ -321,13 +321,25 @@ class MCPHandler:
                     "type": "object",
                     "properties": {
                         "credentials": multi_cloud_credential_schema,
-                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "security_group_id": {
+                            "type": "string",
+                            "description": "AWS Security Group ID (e.g., sg-12345678)"
+                        },
                         "nsg_name": {"type": "string", "description": "Azure Network Security Group name"},
                         "resource_group": {"type": "string", "description": "Azure Resource Group name"},
                         "ip_address": {"type": "string", "description": "IP address to remove (optional)"},
-                        "port": {"type": "integer", "description": "Port number to remove (optional)", "minimum": 1, "maximum": 65535},
+                        "port": {
+                            "type": "integer",
+                            "description": "Port number to remove (optional)",
+                            "minimum": 1,
+                            "maximum": 65535
+                        },
                         "service_name": {"type": "string", "description": "Service name to remove (optional)"},
-                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"], "description": "Protocol (default: tcp)"}
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["tcp", "udp", "icmp"],
+                            "description": "Protocol (default: tcp)"
+                        }
                     },
                     "required": ["credentials"]
                 }
@@ -339,7 +351,10 @@ class MCPHandler:
                     "type": "object",
                     "properties": {
                         "credentials": multi_cloud_credential_schema,
-                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "security_group_id": {
+                            "type": "string",
+                            "description": "AWS Security Group ID (e.g., sg-12345678)"
+                        },
                         "nsg_name": {"type": "string", "description": "Azure Network Security Group name"},
                         "resource_group": {"type": "string", "description": "Azure Resource Group name"}
                     },
@@ -353,12 +368,24 @@ class MCPHandler:
                     "type": "object",
                     "properties": {
                         "credentials": multi_cloud_credential_schema,
-                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "security_group_id": {
+                            "type": "string",
+                            "description": "AWS Security Group ID (e.g., sg-12345678)"
+                        },
                         "nsg_name": {"type": "string", "description": "Azure Network Security Group name"},
                         "resource_group": {"type": "string", "description": "Azure Resource Group name"},
                         "ip_address": {"type": "string", "description": "IP address or CIDR block to check"},
-                        "port": {"type": "integer", "description": "Port number to check (optional)", "minimum": 1, "maximum": 65535},
-                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"], "description": "Protocol (default: tcp)"}
+                        "port": {
+                            "type": "integer",
+                            "description": "Port number to check (optional)",
+                            "minimum": 1,
+                            "maximum": 65535
+                        },
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["tcp", "udp", "icmp"],
+                            "description": "Protocol (default: tcp)"
+                        }
                     },
                     "required": ["credentials", "ip_address"]
                 }
