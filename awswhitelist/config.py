@@ -176,9 +176,38 @@ def load_config(config_path: Optional[str] = None) -> Config:
     config = Config.from_dict(config_dict)
     
     # Override with environment variables
-    if "AWS_WHITELIST_REGION" in os.environ:
-        config.default_parameters.region = os.environ["AWS_WHITELIST_REGION"]
+    # Cloud provider selection
+    cloud_provider = os.environ.get("CLOUD_PROVIDER", "aws").lower()
+    if cloud_provider in ["aws", "azure", "gcp", "all"]:
+        config.default_parameters.cloud_provider = CloudProvider(cloud_provider)
     
+    # AWS overrides
+    if "AWS_WHITELIST_REGION" in os.environ:
+        config.default_parameters.aws_region = os.environ["AWS_WHITELIST_REGION"]
+    elif "AWS_DEFAULT_REGION" in os.environ:
+        config.default_parameters.aws_region = os.environ["AWS_DEFAULT_REGION"]
+    
+    if "AWS_DEFAULT_SECURITY_GROUP_ID" in os.environ:
+        config.default_parameters.aws_security_group_id = os.environ["AWS_DEFAULT_SECURITY_GROUP_ID"]
+    
+    # Azure overrides
+    if "AZURE_DEFAULT_RESOURCE_GROUP" in os.environ:
+        config.default_parameters.azure_resource_group = os.environ["AZURE_DEFAULT_RESOURCE_GROUP"]
+    
+    if "AZURE_DEFAULT_NSG_NAME" in os.environ:
+        config.default_parameters.azure_nsg_name = os.environ["AZURE_DEFAULT_NSG_NAME"]
+    
+    # GCP overrides
+    if "GCP_PROJECT_ID" in os.environ:
+        config.default_parameters.gcp_project_id = os.environ["GCP_PROJECT_ID"]
+    
+    if "GCP_DEFAULT_NETWORK" in os.environ:
+        config.default_parameters.gcp_network = os.environ["GCP_DEFAULT_NETWORK"]
+    
+    gcp_additive = os.environ.get("GCP_ADDITIVE_ONLY", "true").lower()
+    config.default_parameters.gcp_additive_only = gcp_additive != "false"
+    
+    # Common overrides
     if "AWS_WHITELIST_PORT" in os.environ:
         try:
             config.default_parameters.port = int(os.environ["AWS_WHITELIST_PORT"])

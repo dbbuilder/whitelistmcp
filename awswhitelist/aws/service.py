@@ -1,6 +1,6 @@
 """AWS service wrapper for security group management."""
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime, timezone
 import boto3
 from botocore.exceptions import ClientError, BotoCoreError
@@ -203,7 +203,124 @@ class AWSService:
                 error=f"Unexpected error: {str(e)}"
             )
     
-    def remove_whitelist_rule(self, rule: SecurityGroupRule) -> WhitelistResult:
+    def remove_whitelist_rule(
+        self,
+        security_group_id: str,
+        ip_address: Optional[str] = None,
+        port: Optional[Union[int, str]] = None,
+        service_name: Optional[str] = None,
+        protocol: str = "tcp"
+    ) -> WhitelistResult:
+        """Remove whitelist rules based on flexible criteria.
+        
+        Args:
+            security_group_id: Security group ID
+            ip_address: IP address to remove (optional)
+            port: Port to remove (optional)
+            service_name: Service name to match in description (optional)
+            protocol: Protocol (default: tcp)
+        
+        Returns:
+            WhitelistResult indicating success or failure
+        """
+        try:
+            # Get all rules
+            all_rules = self.list_whitelist_rules(security_group_id)
+            
+            if not all_rules:
+                return WhitelistResult(
+                    success=False,
+                    error="No rules found in security group"
+                )
+            
+            # Normalize IP if provided
+            if ip_address:
+                try:
+                    from awswhitelist.utils.ip_validator import normalize_ip_input
+                    ip_address = normalize_ip_input(ip_address)
+                except Exception:
+                    return WhitelistResult(
+                        success=False,
+                        error=f"Invalid IP address: {ip_address}"
+                    )
+            
+            # Find rules to remove
+            rules_to_remove = []
+            for rule in all_rules:
+                match = True
+                
+                # Check IP match
+                if ip_address and rule.cidr_ip != ip_address:
+                    match = False
+                
+                # Check port match
+                if port is not None:
+                    port_int = int(port) if isinstance(port, str) else port
+                    if rule.from_port != port_int or rule.to_port != port_int:
+                        match = False
+                
+                # Check service name match (in description)
+                if service_name and (not rule.description or service_name not in rule.description):
+                    match = False
+                
+                # Check protocol match
+                if protocol and rule.ip_protocol.lower() != protocol.lower():
+                    match = False
+                
+                if match:
+                    rules_to_remove.append(rule)
+            
+            if not rules_to_remove:
+                criteria = []
+                if ip_address:
+                    criteria.append(f"IP={ip_address}")
+                if port:
+                    criteria.append(f"port={port}")
+                if service_name:
+                    criteria.append(f"service={service_name}")
+                
+                return WhitelistResult(
+                    success=False,
+                    error=f"No matching rules found for {', '.join(criteria)}"
+                )
+            
+            # Remove the rules
+            removed_count = 0
+            failed_count = 0
+            
+            for rule in rules_to_remove:
+                try:
+                    self.ec2_client.revoke_security_group_ingress(
+                        GroupId=security_group_id,
+                        IpPermissions=[rule.to_aws_dict()]
+                    )
+                    removed_count += 1
+                    logger.info(f"Removed rule: {rule.cidr_ip}:{rule.from_port}")
+                except Exception as e:
+                    failed_count += 1
+                    logger.error(f"Failed to remove rule {rule.cidr_ip}:{rule.from_port}: {str(e)}")
+            
+            if removed_count > 0:
+                message = f"Successfully removed {removed_count} rule(s)"
+                if failed_count > 0:
+                    message += f" ({failed_count} failed)"
+                return WhitelistResult(
+                    success=True,
+                    message=message
+                )
+            else:
+                return WhitelistResult(
+                    success=False,
+                    error=f"Failed to remove any rules ({failed_count} failures)"
+                )
+                
+        except Exception as e:
+            return WhitelistResult(
+                success=False,
+                error=f"Unexpected error: {str(e)}"
+            )
+    
+    def remove_whitelist_rule_legacy(self, rule: SecurityGroupRule) -> WhitelistResult:
         """Remove IP whitelist rule from security group.
         
         Args:

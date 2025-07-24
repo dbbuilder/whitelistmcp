@@ -1,4 +1,4 @@
-"""Setup script for AWS Whitelisting MCP Server."""
+"""Setup script for Multi-Cloud Whitelisting MCP Server."""
 
 from setuptools import setup, find_packages
 import os
@@ -20,23 +20,32 @@ if os.path.exists("requirements.txt"):
 else:
     # Fallback to hardcoded requirements if file doesn't exist
     requirements = [
-        "boto3>=1.34.0",
-        "botocore>=1.34.0",
+        # Common dependencies
         "python-json-logger>=2.0.7",
         "pydantic>=2.5.0",
         "requests>=2.28.0",
+        # AWS dependencies
+        "boto3>=1.34.0",
+        "botocore>=1.34.0",
+        # Azure dependencies
+        "azure-identity>=1.15.0",
+        "azure-mgmt-network>=25.0.0",
+        "azure-core>=1.29.0",
+        # GCP dependencies
+        "google-cloud-compute>=1.14.0",
+        "google-auth>=2.25.0",
     ]
 
 setup(
-    name="awswhitelist_mcp",
+    name="whitelistmcp",
     version=version["__version__"],
     author="DBBuilder",
     author_email="dbbuilderio@gmail.com",
-    description="MCP server for AWS Security Group IP whitelisting with stateless credential handling",
-    keywords="aws, security-group, mcp, model-context-protocol, whitelist, ip-management",
+    description="Multi-cloud MCP server for security group/firewall IP whitelisting across AWS, Azure, and GCP",
+    keywords="aws, azure, gcp, security-group, firewall, nsg, mcp, model-context-protocol, whitelist, ip-management, multi-cloud",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/dbbuilder/awswhitelist2",
+    url="https://github.com/dbbuilder/whitelistmcp",
     license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
     classifiers=[

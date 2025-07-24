@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AWS Whitelisting MCP Server is a Model Context Protocol (MCP) server that manages AWS Security Group IP whitelisting. It's a stateless service that accepts AWS credentials per request and provides secure IP whitelisting functionality.
+Multi-Cloud Whitelisting MCP Server is a Model Context Protocol (MCP) server that manages security group/firewall IP whitelisting across AWS, Azure, and Google Cloud Platform. It's a stateless service that accepts cloud credentials per request and provides secure, unified whitelisting functionality with cloud-specific optimizations.
 
 ## Key Architecture Components
 
@@ -14,10 +14,12 @@ AWS Whitelisting MCP Server is a Model Context Protocol (MCP) server that manage
 - Tool names: `whitelist_add`, `whitelist_remove`, `whitelist_list`, `whitelist_check`
 - Stateless design - credentials passed with each request
 
-### 2. AWS Service Layer (`awswhitelist/aws/`)
-- `service.py`: Wraps boto3 EC2 client for security group operations
-- Handles rule creation, deletion, and listing with proper error handling
-- Uses Pydantic models for type safety
+### 2. Cloud Service Layers
+- **AWS** (`awswhitelist/aws/service.py`): EC2 Security Groups via boto3
+- **Azure** (`awswhitelist/azure/service.py`): Network Security Groups via azure-mgmt-network
+- **GCP** (`awswhitelist/gcp/service.py`): VPC Firewall Rules via google-cloud-compute
+- Each service handles rule creation, deletion, and listing with cloud-specific logic
+- GCP includes additive-only mode for safety (never modifies existing rules)
 
 ### 3. Utilities (`awswhitelist/utils/`)
 - `credential_validator.py`: AWS credential validation using STS
@@ -26,8 +28,9 @@ AWS Whitelisting MCP Server is a Model Context Protocol (MCP) server that manage
 
 ### 4. Configuration (`awswhitelist/config.py`)
 - Hierarchical configuration: file → environment variables → defaults
-- Supports credential profiles, port mappings, and security settings
-- Uses Pydantic for validation
+- Multi-cloud credential profiles with cloud-specific settings
+- Supports port mappings, security settings, and cloud provider selection
+- Uses Pydantic for validation with CloudProvider enum
 
 ## Common Development Commands
 
@@ -73,18 +76,23 @@ docker-compose up awswhitelist-dev       # Run development
 {
   "jsonrpc": "2.0",
   "id": "unique-request-id",
-  "method": "whitelist_add",
+  "method": "tools/call",
   "params": {
-    "credentials": {
-      "access_key_id": "AKIA...",
-      "secret_access_key": "...",
-      "region": "us-east-1"
-    },
-    "security_group_id": "sg-123456",
-    "ip_address": "192.168.1.1",
-    "port": 443,
-    "protocol": "tcp",
-    "description": "API access"
+    "name": "whitelist_add",
+    "arguments": {
+      "cloud": "aws",  // aws, azure, or gcp
+      "credentials": {
+        "access_key_id": "AKIA...",
+        "secret_access_key": "...",
+        "region": "us-east-1"
+      },
+      "security_group_id": "sg-123456",  // or nsg_name for Azure
+      "ip_address": "192.168.1.1",
+      "port": 443,
+      "protocol": "tcp",
+      "description": "API access",
+      "service_name": "https"  // optional
+    }
   }
 }
 ```
@@ -124,10 +132,14 @@ docker-compose up awswhitelist-dev       # Run development
 
 ## Configuration Options
 
-- **Credential Profiles**: Named AWS credential configurations
+- **Cloud Provider**: Select aws, azure, gcp, or all for parallel operations
+- **Credential Profiles**: Named credential configurations for each cloud
 - **Port Mappings**: Named ports (e.g., "https" → 443)
 - **Security Settings**: MFA requirements, IP restrictions, rate limits
-- **Default Parameters**: Region, port, protocol, description templates
+- **Cloud-Specific Defaults**: 
+  - AWS: region, security group ID
+  - Azure: resource group, NSG name
+  - GCP: project ID, network, additive-only mode
 
 ## Docker Deployment
 

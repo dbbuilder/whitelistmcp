@@ -1,3 +1,3 @@
-"""Version information for awswhitelist package."""
+"""Version information for whitelistmcp package."""
 
-__version__ = "1.1.10"
+__version__ = "2.0.0"

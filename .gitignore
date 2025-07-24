@@ -2,13 +2,21 @@
 .env
 .env.local
 .env.*.local
+.env.aws
+.env.azure
+.env.gcp
 PyPi.env
 
-# AWS credentials
+# Cloud credentials
 *.pem
 *.key
 aws_credentials
+azure_credentials
+gcp_credentials.json
+gcp-credentials.json
 credentials
+*.json.key
+service-account-*.json
 /*venv*/
 /*test_env*/
 /test_env/
