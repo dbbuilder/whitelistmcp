@@ -30,8 +30,8 @@ For development/testing, you can configure the MCP server to read from environme
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": [],
       "env": {
         "PYTHONUNBUFFERED": "1",
@@ -53,8 +53,8 @@ Configure the server to use AWS CLI credentials:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": ["-c", "config_with_profile.json"],
       "env": {
         "PYTHONUNBUFFERED": "1",
@@ -137,8 +137,8 @@ Enable MFA on your AWS account for additional security.
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": [],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -153,8 +153,8 @@ Enable MFA on your AWS account for additional security.
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": ["-c", "config.json"],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -229,8 +229,8 @@ Enable verbose logging:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": ["-v"],
       "env": {
         "PYTHONUNBUFFERED": "1",

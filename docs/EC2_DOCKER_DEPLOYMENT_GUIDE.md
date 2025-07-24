@@ -210,7 +210,7 @@ cat > docker-compose.override.yml << 'EOF'
 version: '3.8'
 
 services:
-  awswhitelist-remote:
+  whitelistmcp-remote:
     restart: always
     logging:
       driver: "json-file"
@@ -451,7 +451,7 @@ case $ACTION in
         docker ps -a | grep mcp || echo "No MCP containers found"
         echo ""
         echo "Container health:"
-        docker inspect awswhitelist-remote | jq '.[0].State.Health'
+        docker inspect whitelistmcp-remote | jq '.[0].State.Health'
         ;;
     
     update)
@@ -465,12 +465,12 @@ case $ACTION in
     
     shell)
         echo "Entering container shell..."
-        docker exec -it awswhitelist-remote /bin/sh
+        docker exec -it whitelistmcp-remote /bin/sh
         ;;
     
     stats)
         echo "Container resource usage:"
-        docker stats --no-stream awswhitelist-remote
+        docker stats --no-stream whitelistmcp-remote
         ;;
     
     *)

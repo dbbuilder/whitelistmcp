@@ -351,7 +351,7 @@ display_results() {
     cat << EOF
 {
   "mcpServers": {
-    "awswhitelist-ec2": {
+    "whitelistmcp-ec2": {
       "command": "python",
       "args": ["-m", "scripts.mcp-remote-proxy"],
       "env": {

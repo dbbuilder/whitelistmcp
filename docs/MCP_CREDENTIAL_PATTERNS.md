@@ -330,7 +330,7 @@ class RotatingCredentialProvider:
   "mcpServers": {
     "aws-whitelist": {
       "command": "npx",
-      "args": ["awswhitelist-mcp"],
+      "args": ["whitelistmcp-mcp"],
       "env": {
         "AWS_PROFILE": "production",
         "AWS_REGION": "us-east-1",

@@ -1,7 +1,7 @@
 @echo off
 REM Parameterized PyPI Publishing Script
 REM Usage: publish-to-pypi.bat [drive] [directory] [build_name] [exe_name]
-REM Example: publish-to-pypi.bat d d:/dev2/awswhitelist2 awswhitelist_mcp awswhitelist
+REM Example: publish-to-pypi.bat d d:/dev2/whitelistmcp2 whitelistmcp_mcp whitelistmcp
 
 setlocal EnableDelayedExpansion
 
@@ -13,9 +13,9 @@ set EXE_NAME=%~4
 
 REM Use defaults if parameters are empty
 if "%DRIVE%"=="" set DRIVE=d
-if "%DIRECTORY%"=="" set DIRECTORY=d:/dev2/awswhitelist2
-if "%BUILD_NAME%"=="" set BUILD_NAME=awswhitelist_mcp
-if "%EXE_NAME%"=="" set EXE_NAME=awswhitelist
+if "%DIRECTORY%"=="" set DIRECTORY=d:/dev2/whitelistmcp2
+if "%BUILD_NAME%"=="" set BUILD_NAME=whitelistmcp_mcp
+if "%EXE_NAME%"=="" set EXE_NAME=whitelistmcp
 
 echo ========================================
 echo PyPI Publishing Script

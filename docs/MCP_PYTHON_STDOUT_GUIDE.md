@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Model Context Protocol (MCP) is a powerful way to extend AI assistants like Claude Desktop with custom tools. However, building an MCP server requires strict adherence to protocol specifications, particularly around input/output streams, JSON schema validation, and naming conventions. This guide documents critical lessons learned while building the `awswhitelist-mcp` server (versions 1.0.0 through 1.1.9) and provides best practices for Python developers.
+The Model Context Protocol (MCP) is a powerful way to extend AI assistants like Claude Desktop with custom tools. However, building an MCP server requires strict adherence to protocol specifications, particularly around input/output streams, JSON schema validation, and naming conventions. This guide documents critical lessons learned while building the `whitelistmcp-mcp` server (versions 1.0.0 through 1.1.9) and provides best practices for Python developers.
 
 ## The Fundamental Rule of MCP
 
@@ -357,7 +357,7 @@ Building MCP servers in Python requires discipline about output streams. The gol
 
 By following these guidelines, you can avoid the common pitfalls that lead to "Unexpected end of JSON input" and other protocol errors, ensuring your MCP server works reliably with Claude Desktop and other MCP clients.
 
-## Additional Lessons from awswhitelist-mcp Development
+## Additional Lessons from whitelistmcp-mcp Development
 
 ### Version Management (v1.1.7)
 

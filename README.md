@@ -94,6 +94,31 @@ Simply ask Claude to manage your security groups across any cloud:
 
 For detailed setup instructions, see [CLAUDE_DESKTOP_SETUP.md](docs/CLAUDE_DESKTOP_SETUP.md).
 
+## 🚀 Parallel Multi-Cloud Execution
+
+When `CLOUD_PROVIDER=all`, operations execute simultaneously across all configured clouds:
+
+```bash
+# Example: Add IP to all clouds in parallel
+{
+  "cloud": "all",
+  "ip_address": "203.0.113.1",
+  "port": 443,
+  "description": "Production API access"
+}
+
+# Result: Rules created in parallel on:
+# - AWS Security Group (us-east-1)
+# - Azure NSG (eastus)
+# - GCP Firewall (us-central1)
+```
+
+### Performance Benefits
+- **3x Faster**: Operations complete as fast as the slowest cloud
+- **Atomic Operations**: Each cloud operation is independent
+- **Detailed Results**: Individual success/failure per cloud
+- **Automatic Retry**: Failed operations can be retried per cloud
+
 ## 🔐 Environment Variables
 
 Key environment variables (see `.env.example` for full list):
@@ -133,18 +158,39 @@ DESCRIPTION_TIMESTAMP_FORMAT=%Y%m%d-%H%M
 The MCP server provides these tools:
 
 ### `whitelist_add`
-Add an IP address to a security group/firewall.
+Add an IP address to security groups/firewalls across one or more clouds.
 
 ```json
 {
-  "cloud": "aws",  // aws, azure, or gcp
-  "credentials": {...},
-  "security_group_id": "sg-123456",  // or nsg_name for Azure, firewall_name for GCP
+  "cloud": "all",  // aws, azure, gcp, or all for parallel execution
+  "credentials": {
+    "aws_credentials": {
+      "access_key_id": "AKIA...",
+      "secret_access_key": "...",
+      "region": "us-east-1"  // AWS-specific region
+    },
+    "azure_credentials": {
+      "client_id": "...",
+      "client_secret": "...",
+      "tenant_id": "...",
+      "subscription_id": "...",
+      "region": "eastus"  // Azure-specific region
+    },
+    "gcp_credentials": {
+      "project_id": "my-project",
+      "credentials_path": "/path/to/creds.json",
+      "region": "us-central1"  // GCP-specific region
+    }
+  },
+  "security_group_id": "sg-123456",  // AWS
+  "nsg_name": "my-nsg",              // Azure
+  "resource_group": "my-rg",         // Azure
+  "firewall_name": "allow-web",      // GCP
   "ip_address": "192.168.1.1",
   "port": 22,
   "protocol": "tcp",
   "description": "SSH access",
-  "service_name": "ssh"  // optional: for service-based rules
+  "service_name": "ssh"
 }
 ```
 

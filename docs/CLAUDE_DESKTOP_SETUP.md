@@ -8,15 +8,15 @@ This guide explains how to install and configure the AWS Whitelisting MCP Server
 
 1. Install the package (version 1.1.10 or later required):
    ```bash
-   pip install awswhitelist-mcp>=1.1.10
+   pip install whitelistmcp-mcp>=1.1.10
    ```
 
 2. Add to Claude Desktop configuration:
    ```json
    {
      "mcpServers": {
-       "awswhitelist": {
-         "command": "awswhitelist",
+       "whitelistmcp": {
+         "command": "whitelistmcp",
          "args": [],
          "env": {
            "PYTHONUNBUFFERED": "1"
@@ -30,8 +30,8 @@ This guide explains how to install and configure the AWS Whitelisting MCP Server
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/dbbuilder/awswhitelist2.git
-   cd awswhitelist2
+   git clone https://github.com/dbbuilder/whitelistmcp2.git
+   cd whitelistmcp2
    pip install -r requirements.txt
    ```
 
@@ -39,13 +39,13 @@ This guide explains how to install and configure the AWS Whitelisting MCP Server
    ```json
    {
      "mcpServers": {
-       "awswhitelist": {
+       "whitelistmcp": {
          "command": "python",
-         "args": ["-m", "awswhitelist.main"],
-         "cwd": "/full/path/to/awswhitelist2",
+         "args": ["-m", "whitelistmcp.main"],
+         "cwd": "/full/path/to/whitelistmcp2",
          "env": {
            "PYTHONUNBUFFERED": "1",
-           "PYTHONPATH": "/full/path/to/awswhitelist2"
+           "PYTHONPATH": "/full/path/to/whitelistmcp2"
          }
        }
      }
@@ -59,8 +59,8 @@ If you want to use a configuration file for default settings:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": ["-c", "/path/to/config.json"],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -108,7 +108,7 @@ Add my current IP to security group sg-123456789 for HTTPS access
 ```
 
 Claude will use the MCP tools with the following format:
-- Tool names appear as `awswhitelist:whitelist_add` in Claude Desktop
+- Tool names appear as `whitelistmcp:whitelist_add` in Claude Desktop
 - The server implements the standard `tools/call` method for execution
 
 ## Available Tools
@@ -121,10 +121,10 @@ The server provides these MCP tools:
 4. **whitelist_check** - Check if an IP is whitelisted
 
 In Claude Desktop, these appear with the server prefix:
-- `awswhitelist:whitelist_add`
-- `awswhitelist:whitelist_remove`
-- `awswhitelist:whitelist_list`
-- `awswhitelist:whitelist_check`
+- `whitelistmcp:whitelist_add`
+- `whitelistmcp:whitelist_remove`
+- `whitelistmcp:whitelist_list`
+- `whitelistmcp:whitelist_check`
 
 ## Security Notes
 
@@ -139,8 +139,8 @@ In Claude Desktop, these appear with the server prefix:
    ```json
    {
      "mcpServers": {
-       "awswhitelist": {
-         "command": "awswhitelist",
+       "whitelistmcp": {
+         "command": "whitelistmcp",
          "env": {
            "AWS_ACCESS_KEY_ID": "your-key",
            "AWS_SECRET_ACCESS_KEY": "your-secret",
@@ -155,8 +155,8 @@ In Claude Desktop, these appear with the server prefix:
    ```json
    {
      "mcpServers": {
-       "awswhitelist": {
-         "command": "awswhitelist",
+       "whitelistmcp": {
+         "command": "whitelistmcp",
          "env": {
            "AWS_PROFILE": "production"
          }
@@ -178,8 +178,8 @@ Add verbose flag to see detailed logs:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": ["-v"],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -195,16 +195,16 @@ Test the server directly:
 
 ```bash
 # Test initialization
-echo '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{"protocolVersion":"2024-11-05"}}' | awswhitelist
+echo '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{"protocolVersion":"2024-11-05"}}' | whitelistmcp
 
 # Test tools list
-echo '{"jsonrpc":"2.0","method":"tools/list","id":2,"params":{}}' | awswhitelist
+echo '{"jsonrpc":"2.0","method":"tools/list","id":2,"params":{}}' | whitelistmcp
 ```
 
 ### Common Issues
 
 1. **"Method not found: tools/call"**: Update to version 1.1.10 or later
-2. **Import errors**: Ensure all dependencies are installed with `pip install awswhitelist-mcp`
+2. **Import errors**: Ensure all dependencies are installed with `pip install whitelistmcp-mcp`
 3. **Permission errors**: Check AWS IAM permissions
 4. **Connection errors**: Verify network connectivity to AWS
 5. **Invalid JSON**: Enable verbose logging to debug
@@ -223,8 +223,8 @@ Example:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "env": {
         "PYTHONUNBUFFERED": "1",
         "AWS_WHITELIST_LOG_LEVEL": "DEBUG",

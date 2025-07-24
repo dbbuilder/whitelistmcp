@@ -79,8 +79,8 @@ Create a custom policy with only the required permissions:
 
 ```bash
 # Clone the repository
-git clone https://github.com/dbbuilder/awswhitelist2.git
-cd awswhitelist2
+git clone https://github.com/dbbuilder/whitelistmcp2.git
+cd whitelistmcp2
 
 # Create virtual environment
 # Linux/macOS/WSL:
@@ -139,7 +139,7 @@ Create a file `demo_config.json`:
 
 In one terminal:
 ```bash
-python -m awswhitelist.main -c demo_config.json -v
+python -m whitelistmcp.main -c demo_config.json -v
 ```
 
 The server is now waiting for JSON-RPC requests on stdin.
@@ -175,17 +175,17 @@ Send the request:
 
 **Linux/macOS/WSL:**
 ```bash
-cat add_current_ip.json | python -m awswhitelist.main -c demo_config.json
+cat add_current_ip.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 **Windows PowerShell:**
 ```powershell
-Get-Content add_current_ip.json | python -m awswhitelist.main -c demo_config.json
+Get-Content add_current_ip.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 **Windows Command Prompt:**
 ```cmd
-type add_current_ip.json | python -m awswhitelist.main -c demo_config.json
+type add_current_ip.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 Expected response:
@@ -230,17 +230,17 @@ Send the request:
 
 **Linux/macOS/WSL:**
 ```bash
-cat list_rules.json | python -m awswhitelist.main -c demo_config.json
+cat list_rules.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 **Windows PowerShell:**
 ```powershell
-Get-Content list_rules.json | python -m awswhitelist.main -c demo_config.json
+Get-Content list_rules.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 **Windows Command Prompt:**
 ```cmd
-type list_rules.json | python -m awswhitelist.main -c demo_config.json
+type list_rules.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 #### Test 3: Add Specific IP Range
@@ -322,7 +322,7 @@ import sys
 def send_request(request):
     """Send request to MCP server and get response."""
     proc = subprocess.Popen(
-        ['python', '-m', 'awswhitelist.main', '-c', 'demo_config.json'],
+        ['python', '-m', 'whitelistmcp.main', '-c', 'demo_config.json'],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -472,7 +472,7 @@ python demo_interactive.py
 docker-compose build
 
 # Run interactive demo
-docker run -it --rm awswhitelist:latest python -m awswhitelist.main -v
+docker run -it --rm whitelistmcp:latest python -m whitelistmcp.main -v
 ```
 
 ### 2. Docker Compose Testing
@@ -481,17 +481,17 @@ Create `docker-test-request.json` and run:
 
 **Linux/macOS/WSL:**
 ```bash
-cat docker-test-request.json | docker-compose run --rm awswhitelist
+cat docker-test-request.json | docker-compose run --rm whitelistmcp
 ```
 
 **Windows PowerShell:**
 ```powershell
-Get-Content docker-test-request.json | docker-compose run --rm awswhitelist
+Get-Content docker-test-request.json | docker-compose run --rm whitelistmcp
 ```
 
 **Windows Command Prompt:**
 ```cmd
-type docker-test-request.json | docker-compose run --rm awswhitelist
+type docker-test-request.json | docker-compose run --rm whitelistmcp
 ```
 
 ## Verifying in AWS Console
@@ -524,17 +524,17 @@ Run with verbose logging:
 
 **Linux/macOS/WSL:**
 ```bash
-python -m awswhitelist.main -c demo_config.json -v 2>&1 | tee debug.log
+python -m whitelistmcp.main -c demo_config.json -v 2>&1 | tee debug.log
 ```
 
 **Windows PowerShell:**
 ```powershell
-python -m awswhitelist.main -c demo_config.json -v 2>&1 | Tee-Object -FilePath debug.log
+python -m whitelistmcp.main -c demo_config.json -v 2>&1 | Tee-Object -FilePath debug.log
 ```
 
 **Windows Command Prompt:**
 ```cmd
-python -m awswhitelist.main -c demo_config.json -v > debug.log 2>&1
+python -m whitelistmcp.main -c demo_config.json -v > debug.log 2>&1
 ```
 
 ## Cleanup
@@ -545,17 +545,17 @@ List all rules first:
 
 **Linux/macOS/WSL:**
 ```bash
-cat list_rules.json | python -m awswhitelist.main -c demo_config.json
+cat list_rules.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 **Windows PowerShell:**
 ```powershell
-Get-Content list_rules.json | python -m awswhitelist.main -c demo_config.json
+Get-Content list_rules.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 **Windows Command Prompt:**
 ```cmd
-type list_rules.json | python -m awswhitelist.main -c demo_config.json
+type list_rules.json | python -m whitelistmcp.main -c demo_config.json
 ```
 
 Then remove specific rules using the remove_rule.json template.

@@ -24,7 +24,7 @@ def setup_logging(
         Configured logger instance
     """
     # Create logger
-    logger = logging.getLogger("awswhitelist")
+    logger = logging.getLogger("whitelistmcp")
     logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
     
     # Remove existing handlers
@@ -75,4 +75,4 @@ def get_logger(name: str) -> logging.Logger:
     Returns:
         Logger instance
     """
-    return logging.getLogger(f"awswhitelist.{name}")
+    return logging.getLogger(f"whitelistmcp.{name}")

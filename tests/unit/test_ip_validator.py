@@ -180,12 +180,12 @@ class TestNormalizeIPInput:
         # "current" should trigger IP detection (mocked in tests)
         
         # Mock successful IP detection
-        with patch('awswhitelist.utils.ip_validator.get_current_ip') as mock_get_ip:
+        with patch('whitelistmcp.utils.ip_validator.get_current_ip') as mock_get_ip:
             mock_get_ip.return_value = {'ip': '203.0.113.1', 'source': 'test'}
             assert normalize_ip_input("current") == "203.0.113.1/32"
         
         # Mock failed IP detection
-        with patch('awswhitelist.utils.ip_validator.get_current_ip') as mock_get_ip:
+        with patch('whitelistmcp.utils.ip_validator.get_current_ip') as mock_get_ip:
             mock_get_ip.return_value = {'ip': None, 'source': 'failed'}
             with pytest.raises(IPValidationError):
                 normalize_ip_input("current")
@@ -208,7 +208,7 @@ class TestGetCurrentIP:
     def test_get_current_ip_with_working_service(self):
         """Test get_current_ip with working external service."""
         # Mock successful response from ipify
-        with patch('awswhitelist.utils.ip_validator.requests.get') as mock_get:
+        with patch('whitelistmcp.utils.ip_validator.requests.get') as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = {'ip': '203.0.113.1'}
             mock_response.raise_for_status = Mock()
@@ -220,8 +220,8 @@ class TestGetCurrentIP:
             assert 'api.ipify.org' in result['source']
             assert validate_ip_address(result['ip'])
     
-    @patch('awswhitelist.utils.ip_validator.socket.socket')
-    @patch('awswhitelist.utils.ip_validator.requests.get')
+    @patch('whitelistmcp.utils.ip_validator.socket.socket')
+    @patch('whitelistmcp.utils.ip_validator.requests.get')
     def test_get_current_ip_with_fallback(self, mock_get, mock_socket_class):
         """Test get_current_ip fallback to socket method."""
         # Mock all HTTP requests failing
@@ -238,8 +238,8 @@ class TestGetCurrentIP:
         assert result['ip'] == '192.168.1.100'
         assert result['source'] == 'local_socket'
     
-    @patch('awswhitelist.utils.ip_validator.socket.socket')
-    @patch('awswhitelist.utils.ip_validator.requests.get')
+    @patch('whitelistmcp.utils.ip_validator.socket.socket')
+    @patch('whitelistmcp.utils.ip_validator.requests.get')
     def test_get_current_ip_total_failure(self, mock_get, mock_socket_class):
         """Test get_current_ip when all methods fail."""
         # Mock all HTTP requests failing

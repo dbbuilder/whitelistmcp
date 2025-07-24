@@ -8,6 +8,9 @@ from pydantic import BaseModel, field_validator
 
 from whitelistmcp.utils.credential_validator import AWSCredentials
 from whitelistmcp.utils.ip_validator import validate_cidr_block
+from whitelistmcp.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class AWSServiceError(Exception):

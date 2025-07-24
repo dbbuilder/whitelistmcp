@@ -68,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All version references now use the centralized `__version__` import
 
 ### Fixed
-- Fixed version display in command line (`awswhitelist --version`)
+- Fixed version display in command line (`whitelistmcp --version`)
 
 ## [1.1.6] - 2025-07-17
 
@@ -93,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.3] - 2025-07-17
 
 ### Changed
-- Normalized package name from "awswhitelist-mcp" to "awswhitelist_mcp" for PEP 625 compliance
+- Normalized package name from "whitelistmcp-mcp" to "whitelistmcp_mcp" for PEP 625 compliance
 - This ensures the package name matches the generated wheel and tarball filenames
 
 ## [1.1.2] - 2025-07-17

@@ -3,7 +3,7 @@
 ## Project Setup Stage
 
 ### 1. Initialize Project Structure
-- [ ] Create GitHub private repository `awswhitelist2`
+- [ ] Create GitHub private repository `whitelistmcp2`
 - [ ] Initialize Git in local directory
 - [ ] Create Python .gitignore
 - [ ] Create project directory structure

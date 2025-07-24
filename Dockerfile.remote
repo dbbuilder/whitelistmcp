@@ -17,7 +17,7 @@ COPY requirements-remote.txt .
 RUN pip install --no-cache-dir -r requirements-remote.txt
 
 # Copy application code
-COPY awswhitelist/ ./awswhitelist/
+COPY whitelistmcp/ ./whitelistmcp/
 COPY setup.py .
 COPY MANIFEST.in .
 COPY README.md .
@@ -36,4 +36,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the remote server
-CMD ["python", "-m", "awswhitelist.remote_server", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "-m", "whitelistmcp.remote_server", "--host", "0.0.0.0", "--port", "8080"]

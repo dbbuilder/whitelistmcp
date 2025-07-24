@@ -39,9 +39,9 @@ Create a `docker-compose.remote.yml`:
 version: '3.8'
 
 services:
-  awswhitelist-remote:
+  whitelistmcp-remote:
     build: .
-    image: awswhitelist-mcp:latest
+    image: whitelistmcp-mcp:latest
     ports:
       - "8080:8080"  # HTTP API endpoint
       - "8081:8081"  # WebSocket endpoint
@@ -59,7 +59,7 @@ services:
 
 ### 2. Remote Server Wrapper
 
-Create `awswhitelist/remote_server.py`:
+Create `whitelistmcp/remote_server.py`:
 
 ```python
 """
@@ -120,7 +120,7 @@ class RemoteMCPServer:
         """Health check endpoint"""
         return web.json_response({
             "status": "healthy",
-            "service": "awswhitelist-mcp",
+            "service": "whitelistmcp-mcp",
             "version": "1.1.10"
         })
     
@@ -204,7 +204,7 @@ Create `claude_desktop_config_remote.json`:
 ```json
 {
   "mcpServers": {
-    "awswhitelist-remote": {
+    "whitelistmcp-remote": {
       "command": "node",
       "args": ["mcp-client-proxy.js"],
       "env": {
@@ -341,25 +341,25 @@ new MCPClientProxy();
 ```bash
 # Build and push to ECR
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REPO
-docker build -t awswhitelist-mcp .
-docker tag awswhitelist-mcp:latest $ECR_REPO/awswhitelist-mcp:latest
-docker push $ECR_REPO/awswhitelist-mcp:latest
+docker build -t whitelistmcp-mcp .
+docker tag whitelistmcp-mcp:latest $ECR_REPO/whitelistmcp-mcp:latest
+docker push $ECR_REPO/whitelistmcp-mcp:latest
 
 # Deploy with ECS
-aws ecs create-service --cluster mcp-cluster --service-name awswhitelist-mcp ...
+aws ecs create-service --cluster mcp-cluster --service-name whitelistmcp-mcp ...
 ```
 
 #### Google Cloud Run
 ```bash
 # Build and deploy
-gcloud builds submit --tag gcr.io/$PROJECT_ID/awswhitelist-mcp
-gcloud run deploy awswhitelist-mcp --image gcr.io/$PROJECT_ID/awswhitelist-mcp --platform managed
+gcloud builds submit --tag gcr.io/$PROJECT_ID/whitelistmcp-mcp
+gcloud run deploy whitelistmcp-mcp --image gcr.io/$PROJECT_ID/whitelistmcp-mcp --platform managed
 ```
 
 #### Azure Container Instances
 ```bash
 # Deploy to ACI
-az container create --resource-group mcp-rg --name awswhitelist-mcp --image awswhitelist-mcp:latest
+az container create --resource-group mcp-rg --name whitelistmcp-mcp --image whitelistmcp-mcp:latest
 ```
 
 ### 2. Kubernetes Deployment
@@ -370,20 +370,20 @@ Create `k8s-deployment.yaml`:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: awswhitelist-mcp
+  name: whitelistmcp-mcp
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: awswhitelist-mcp
+      app: whitelistmcp-mcp
   template:
     metadata:
       labels:
-        app: awswhitelist-mcp
+        app: whitelistmcp-mcp
     spec:
       containers:
-      - name: awswhitelist-mcp
-        image: awswhitelist-mcp:latest
+      - name: whitelistmcp-mcp
+        image: whitelistmcp-mcp:latest
         ports:
         - containerPort: 8080
         env:
@@ -398,10 +398,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: awswhitelist-mcp
+  name: whitelistmcp-mcp
 spec:
   selector:
-    app: awswhitelist-mcp
+    app: whitelistmcp-mcp
   ports:
     - protocol: TCP
       port: 80
@@ -414,7 +414,7 @@ spec:
 Create `serverless.yml`:
 
 ```yaml
-service: awswhitelist-mcp
+service: whitelistmcp-mcp
 
 provider:
   name: aws
@@ -476,13 +476,13 @@ You can run both configurations simultaneously:
 ```json
 {
   "mcpServers": {
-    "awswhitelist-local": {
-      "command": "awswhitelist",
+    "whitelistmcp-local": {
+      "command": "whitelistmcp",
       "env": {
         "AWS_PROFILE": "development"
       }
     },
-    "awswhitelist-remote": {
+    "whitelistmcp-remote": {
       "command": "node",
       "args": ["mcp-client-proxy.js"],
       "env": {
@@ -536,7 +536,7 @@ You can run both configurations simultaneously:
 
 ```hcl
 resource "aws_ecs_service" "mcp_server" {
-  name            = "awswhitelist-mcp"
+  name            = "whitelistmcp-mcp"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.mcp.arn
   desired_count   = 3
@@ -564,7 +564,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'awswhitelist/**'
+      - 'whitelistmcp/**'
       - 'Dockerfile'
 
 jobs:
@@ -575,9 +575,9 @@ jobs:
       
       - name: Deploy to Cloud Run
         run: |
-          gcloud builds submit --tag gcr.io/$PROJECT_ID/awswhitelist-mcp
-          gcloud run deploy awswhitelist-mcp \
-            --image gcr.io/$PROJECT_ID/awswhitelist-mcp \
+          gcloud builds submit --tag gcr.io/$PROJECT_ID/whitelistmcp-mcp
+          gcloud run deploy whitelistmcp-mcp \
+            --image gcr.io/$PROJECT_ID/whitelistmcp-mcp \
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated

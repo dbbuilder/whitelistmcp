@@ -41,14 +41,14 @@
 ## Next Steps
 
 1. **Create GitHub Repository**
-   - Go to GitHub and create a new private repository named `awswhitelist2`
+   - Go to GitHub and create a new private repository named `whitelistmcp2`
    - Don't initialize with README (we already have one)
 
 2. **Connect Local to GitHub**
    ```bash
    git add .
    git commit -m "Initial commit: Python MCP server for AWS IP whitelisting"
-   git remote add origin https://github.com/[your-username]/awswhitelist2.git
+   git remote add origin https://github.com/[your-username]/whitelistmcp2.git
    git push -u origin main
    ```
 

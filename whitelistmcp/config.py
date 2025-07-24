@@ -1,4 +1,4 @@
-"""Configuration management for AWS Whitelisting MCP Server."""
+"""Configuration management for Multi-Cloud Whitelisting MCP Server."""
 
 import os
 import sys
@@ -7,33 +7,91 @@ import re
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from enum import Enum
 from pydantic import BaseModel, Field, field_validator
 
 
+class CloudProvider(str, Enum):
+    """Supported cloud providers."""
+    AWS = "aws"
+    AZURE = "azure"
+    GCP = "gcp"
+    ALL = "all"
+
+
 class CredentialProfile(BaseModel):
-    """AWS credential profile configuration."""
+    """Multi-cloud credential profile configuration."""
     
     name: str
-    region: str = "us-east-1"
-    role_arn: Optional[str] = None
+    cloud: CloudProvider = CloudProvider.AWS
     
-    @field_validator("region")
-    def validate_region(cls, v):
+    # AWS-specific credentials and settings
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_session_token: Optional[str] = None
+    aws_region: str = "us-east-1"
+    aws_role_arn: Optional[str] = None
+    
+    # Azure-specific credentials and settings
+    azure_client_id: Optional[str] = None
+    azure_client_secret: Optional[str] = None
+    azure_tenant_id: Optional[str] = None
+    azure_subscription_id: Optional[str] = None
+    azure_region: str = "eastus"
+    
+    # GCP-specific credentials and settings
+    gcp_project_id: Optional[str] = None
+    gcp_credentials_path: Optional[str] = None
+    gcp_credentials_json: Optional[Dict[str, Any]] = None
+    gcp_region: str = "us-central1"
+    
+    @field_validator("aws_region")
+    def validate_aws_region(cls, v):
         """Validate AWS region format."""
-        # AWS region pattern: xx-xxxx-n
-        pattern = r"^[a-z]{2}-[a-z]+-\d{1,2}$"
-        if not re.match(pattern, v):
-            raise ValueError(f"Invalid AWS region format: {v}")
+        if v:
+            # AWS region pattern: xx-xxxx-n
+            pattern = r"^[a-z]{2}-[a-z]+-\d{1,2}$"
+            if not re.match(pattern, v):
+                raise ValueError(f"Invalid AWS region format: {v}")
+        return v
+    
+    @field_validator("azure_region")
+    def validate_azure_region(cls, v):
+        """Validate Azure region format."""
+        if v:
+            # Azure regions are typically lowercase with no spaces
+            pattern = r"^[a-z]+[a-z0-9]*$"
+            if not re.match(pattern, v):
+                raise ValueError(f"Invalid Azure region format: {v}")
         return v
 
 
 class DefaultParameters(BaseModel):
     """Default parameters for whitelisting operations."""
     
-    region: str = "us-east-1"
+    # MCP runtime properties (shared across clouds)
+    cloud_provider: CloudProvider = CloudProvider.AWS
     port: int = 22
     protocol: str = "tcp"
     description_template: str = "Added by MCP on {date} for {user}"
+    
+    # AWS-specific defaults
+    aws_region: str = "us-east-1"
+    aws_security_group_id: Optional[str] = None
+    aws_vpc_id: Optional[str] = None
+    
+    # Azure-specific defaults
+    azure_region: str = "eastus"
+    azure_resource_group: Optional[str] = None
+    azure_nsg_name: Optional[str] = None
+    azure_location: Optional[str] = None
+    
+    # GCP-specific defaults
+    gcp_region: str = "us-central1"
+    gcp_zone: str = "us-central1-a"
+    gcp_project_id: Optional[str] = None
+    gcp_network: str = "default"
+    gcp_additive_only: bool = True
     
     @field_validator("port")
     def validate_port(cls, v):
@@ -48,6 +106,24 @@ class DefaultParameters(BaseModel):
         valid_protocols = ["tcp", "udp", "icmp", "-1"]  # -1 means all protocols
         if v not in valid_protocols:
             raise ValueError(f"Invalid protocol: {v}. Must be one of {valid_protocols}")
+        return v
+    
+    @field_validator("aws_region")
+    def validate_aws_region(cls, v):
+        """Validate AWS region format."""
+        if v:
+            pattern = r"^[a-z]{2}-[a-z]+-\d{1,2}$"
+            if not re.match(pattern, v):
+                raise ValueError(f"Invalid AWS region format: {v}")
+        return v
+    
+    @field_validator("azure_region", "azure_location")
+    def validate_azure_region(cls, v):
+        """Validate Azure region format."""
+        if v:
+            pattern = r"^[a-z]+[a-z0-9]*$"
+            if not re.match(pattern, v):
+                raise ValueError(f"Invalid Azure region format: {v}")
         return v
 
 
@@ -93,7 +169,7 @@ class PortMapping(BaseModel):
 
 
 class Config(BaseModel):
-    """Main configuration for AWS Whitelisting MCP Server."""
+    """Main configuration for Multi-Cloud Whitelisting MCP Server."""
     
     credential_profiles: List[CredentialProfile] = Field(default_factory=list)
     default_parameters: DefaultParameters = Field(default_factory=DefaultParameters)
@@ -123,10 +199,21 @@ class Config(BaseModel):
                 CredentialProfile(**profile) if isinstance(profile, dict) else profile
                 for profile in data["credential_profiles"]
             ]
-        if "default_parameters" in data and isinstance(data["default_parameters"], dict):
-            data["default_parameters"] = DefaultParameters(**data["default_parameters"])
-        if "security_settings" in data and isinstance(data["security_settings"], dict):
-            data["security_settings"] = SecuritySettings(**data["security_settings"])
+        
+        if "default_parameters" in data:
+            data["default_parameters"] = (
+                DefaultParameters(**data["default_parameters"])
+                if isinstance(data["default_parameters"], dict)
+                else data["default_parameters"]
+            )
+        
+        if "security_settings" in data:
+            data["security_settings"] = (
+                SecuritySettings(**data["security_settings"])
+                if isinstance(data["security_settings"], dict)
+                else data["security_settings"]
+            )
+        
         if "port_mappings" in data:
             data["port_mappings"] = [
                 PortMapping(**mapping) if isinstance(mapping, dict) else mapping
@@ -150,10 +237,29 @@ def load_config(config_path: Optional[str] = None) -> Config:
         Config object with loaded configuration.
     
     Environment variables (override file config):
+        MCP Runtime (shared across clouds):
+        - CLOUD_PROVIDER: Cloud provider selection (aws, azure, gcp, all)
         - WHITELIST_MCP_PORT: Default port
         - WHITELIST_MCP_PROTOCOL: Default protocol
         - WHITELIST_MCP_RATE_LIMIT: Rate limit per minute
+        
+        AWS-specific:
         - AWS_DEFAULT_REGION: Default AWS region
+        - AWS_DEFAULT_SECURITY_GROUP_ID: Default security group
+        - AWS_DEFAULT_VPC_ID: Default VPC
+        
+        Azure-specific:
+        - AZURE_DEFAULT_REGION: Default Azure region
+        - AZURE_DEFAULT_LOCATION: Default Azure location
+        - AZURE_DEFAULT_RESOURCE_GROUP: Default resource group
+        - AZURE_DEFAULT_NSG_NAME: Default NSG name
+        
+        GCP-specific:
+        - GCP_DEFAULT_REGION: Default GCP region
+        - GCP_DEFAULT_ZONE: Default GCP zone
+        - GCP_PROJECT_ID: Default GCP project
+        - GCP_DEFAULT_NETWORK: Default VPC network
+        - GCP_ADDITIVE_ONLY: Enable additive-only mode
     """
     # Start with default config
     config_dict: Dict[str, Any] = {}
@@ -181,31 +287,37 @@ def load_config(config_path: Optional[str] = None) -> Config:
     if cloud_provider in ["aws", "azure", "gcp", "all"]:
         config.default_parameters.cloud_provider = CloudProvider(cloud_provider)
     
-    # AWS overrides
+    # AWS-specific overrides
     if "AWS_DEFAULT_REGION" in os.environ:
         config.default_parameters.aws_region = os.environ["AWS_DEFAULT_REGION"]
-    
     if "AWS_DEFAULT_SECURITY_GROUP_ID" in os.environ:
         config.default_parameters.aws_security_group_id = os.environ["AWS_DEFAULT_SECURITY_GROUP_ID"]
+    if "AWS_DEFAULT_VPC_ID" in os.environ:
+        config.default_parameters.aws_vpc_id = os.environ["AWS_DEFAULT_VPC_ID"]
     
-    # Azure overrides
+    # Azure-specific overrides
+    if "AZURE_DEFAULT_REGION" in os.environ:
+        config.default_parameters.azure_region = os.environ["AZURE_DEFAULT_REGION"]
+    if "AZURE_DEFAULT_LOCATION" in os.environ:
+        config.default_parameters.azure_location = os.environ["AZURE_DEFAULT_LOCATION"]
     if "AZURE_DEFAULT_RESOURCE_GROUP" in os.environ:
         config.default_parameters.azure_resource_group = os.environ["AZURE_DEFAULT_RESOURCE_GROUP"]
-    
     if "AZURE_DEFAULT_NSG_NAME" in os.environ:
         config.default_parameters.azure_nsg_name = os.environ["AZURE_DEFAULT_NSG_NAME"]
     
-    # GCP overrides
+    # GCP-specific overrides
+    if "GCP_DEFAULT_REGION" in os.environ:
+        config.default_parameters.gcp_region = os.environ["GCP_DEFAULT_REGION"]
+    if "GCP_DEFAULT_ZONE" in os.environ:
+        config.default_parameters.gcp_zone = os.environ["GCP_DEFAULT_ZONE"]
     if "GCP_PROJECT_ID" in os.environ:
         config.default_parameters.gcp_project_id = os.environ["GCP_PROJECT_ID"]
-    
     if "GCP_DEFAULT_NETWORK" in os.environ:
         config.default_parameters.gcp_network = os.environ["GCP_DEFAULT_NETWORK"]
-    
     gcp_additive = os.environ.get("GCP_ADDITIVE_ONLY", "true").lower()
     config.default_parameters.gcp_additive_only = gcp_additive != "false"
     
-    # Common overrides
+    # Common MCP runtime overrides
     if "WHITELIST_MCP_PORT" in os.environ:
         try:
             config.default_parameters.port = int(os.environ["WHITELIST_MCP_PORT"])
@@ -225,25 +337,25 @@ def load_config(config_path: Optional[str] = None) -> Config:
 
 
 def get_port_number(port_input: str, config: Config) -> int:
-    """Resolve port number from numeric string or named mapping.
+    """Get port number from input string or mapping.
     
     Args:
-        port_input: Port number as string or port name
-        config: Configuration object with port mappings
+        port_input: Port number or port name
+        config: Configuration object
     
     Returns:
-        Port number as integer
+        Port number
     
     Raises:
-        ValueError: If port input is invalid
+        ValueError: If port is invalid
     """
-    # Try to parse as integer first
+    # Try to parse as integer
     try:
         port = int(port_input)
         if 1 <= port <= 65535:
             return port
         else:
-            raise ValueError(f"Port number out of range: {port}")
+            raise ValueError(f"Port must be between 1 and 65535, got {port}")
     except ValueError:
         pass
     
@@ -252,18 +364,20 @@ def get_port_number(port_input: str, config: Config) -> int:
     if mapping:
         return mapping.port
     
-    # Invalid port input
-    raise ValueError(f"Invalid port: {port_input}. Must be a number (1-65535) or a named mapping.")
-
-
-# Default port mappings
-DEFAULT_PORT_MAPPINGS = [
-    PortMapping(name="ssh", port=22, description="SSH access"),
-    PortMapping(name="http", port=80, description="HTTP traffic"),
-    PortMapping(name="https", port=443, description="HTTPS traffic"),
-    PortMapping(name="rdp", port=3389, description="Remote Desktop Protocol"),
-    PortMapping(name="mysql", port=3306, description="MySQL database"),
-    PortMapping(name="postgresql", port=5432, description="PostgreSQL database"),
-    PortMapping(name="redis", port=6379, description="Redis cache"),
-    PortMapping(name="mongodb", port=27017, description="MongoDB database"),
-]
+    # Common port names
+    common_ports = {
+        "ssh": 22,
+        "telnet": 23,
+        "smtp": 25,
+        "http": 80,
+        "https": 443,
+        "rdp": 3389,
+        "mysql": 3306,
+        "postgresql": 5432,
+        "mongodb": 27017,
+    }
+    
+    if port_input.lower() in common_ports:
+        return common_ports[port_input.lower()]
+    
+    raise ValueError(f"Invalid port: {port_input}")

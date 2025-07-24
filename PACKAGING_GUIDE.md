@@ -11,14 +11,14 @@ This guide covers how to package and distribute the AWS Whitelisting MCP Server 
 1. **Update setup.py** for PyPI compatibility:
    ```python
    setup(
-       name="awswhitelist-mcp",
+       name="whitelistmcp-mcp",
        version="1.0.0",
        author="Your Name",
        author_email="your.email@example.com",
        description="MCP server for AWS Security Group IP whitelisting",
        long_description=open("README.md").read(),
        long_description_content_type="text/markdown",
-       url="https://github.com/dbbuilder/awswhitelist2",
+       url="https://github.com/dbbuilder/whitelistmcp2",
        packages=find_packages(),
        classifiers=[
            "Programming Language :: Python :: 3",
@@ -35,7 +35,7 @@ This guide covers how to package and distribute the AWS Whitelisting MCP Server 
        ],
        entry_points={
            "console_scripts": [
-               "awswhitelist=awswhitelist.main:main",
+               "whitelistmcp=whitelistmcp.main:main",
            ],
        },
    )
@@ -55,7 +55,7 @@ This guide covers how to package and distribute the AWS Whitelisting MCP Server 
 
 3. **Users can then install with**:
    ```bash
-   pip install awswhitelist-mcp
+   pip install whitelistmcp-mcp
    ```
 
 ### 2. GitHub Releases with Installers
@@ -70,21 +70,21 @@ This guide covers how to package and distribute the AWS Whitelisting MCP Server 
 2. **Standalone executable (using PyInstaller)**:
    ```bash
    pip install pyinstaller
-   pyinstaller --onefile --name awswhitelist awswhitelist/main.py
+   pyinstaller --onefile --name whitelistmcp whitelistmcp/main.py
    ```
 
 3. **Docker image**:
    ```bash
-   docker build -t awswhitelist-mcp .
-   docker save awswhitelist-mcp > awswhitelist-mcp.tar
+   docker build -t whitelistmcp-mcp .
+   docker save whitelistmcp-mcp > whitelistmcp-mcp.tar
    ```
 
 4. **Create GitHub Release**:
    ```bash
    gh release create v1.0.0 \
      dist/*.whl \
-     dist/awswhitelist \
-     awswhitelist-mcp.tar \
+     dist/whitelistmcp \
+     whitelistmcp-mcp.tar \
      --title "AWS Whitelisting MCP Server v1.0.0" \
      --notes "First stable release"
    ```
@@ -96,19 +96,19 @@ Register with the official MCP server registry (when available):
 1. Create `mcp-server.json`:
    ```json
    {
-     "name": "awswhitelist",
+     "name": "whitelistmcp",
      "version": "1.0.0",
      "description": "AWS Security Group IP whitelisting",
      "author": "Your Name",
-     "repository": "https://github.com/dbbuilder/awswhitelist2",
-     "homepage": "https://github.com/dbbuilder/awswhitelist2",
+     "repository": "https://github.com/dbbuilder/whitelistmcp2",
+     "homepage": "https://github.com/dbbuilder/whitelistmcp2",
      "license": "MIT",
      "runtime": "python",
      "install": {
-       "pip": "awswhitelist-mcp"
+       "pip": "whitelistmcp-mcp"
      },
      "configuration": {
-       "command": "awswhitelist",
+       "command": "whitelistmcp",
        "args": [],
        "env": {
          "PYTHONUNBUFFERED": "1"
@@ -138,14 +138,14 @@ if (!(Get-Command python -ErrorAction SilentlyContinue)) {
 }
 
 # Install package
-pip install awswhitelist-mcp
+pip install whitelistmcp-mcp
 
 # Configure Claude Desktop
 $configPath = "$env:APPDATA\Claude\claude_desktop_config.json"
 $config = @{
     mcpServers = @{
-        awswhitelist = @{
-            command = "awswhitelist"
+        whitelistmcp = @{
+            command = "whitelistmcp"
             args = @()
             env = @{
                 PYTHONUNBUFFERED = "1"
@@ -157,7 +157,7 @@ $config = @{
 # Create or update config
 if (Test-Path $configPath) {
     $existing = Get-Content $configPath | ConvertFrom-Json
-    $existing.mcpServers.awswhitelist = $config.mcpServers.awswhitelist
+    $existing.mcpServers.whitelistmcp = $config.mcpServers.whitelistmcp
     $existing | ConvertTo-Json -Depth 10 | Set-Content $configPath
 } else {
     New-Item -ItemType Directory -Path (Split-Path $configPath) -Force
@@ -182,7 +182,7 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # Install package
-pip3 install awswhitelist-mcp
+pip3 install whitelistmcp-mcp
 
 # Configure Claude Desktop
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -203,8 +203,8 @@ with open('$CONFIG_PATH', 'r') as f:
     config = json.load(f)
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
-config['mcpServers']['awswhitelist'] = {
-    'command': 'awswhitelist',
+config['mcpServers']['whitelistmcp'] = {
+    'command': 'whitelistmcp',
     'args': [],
     'env': {'PYTHONUNBUFFERED': '1'}
 }
@@ -216,8 +216,8 @@ else
     cat > "$CONFIG_PATH" << EOF
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": [],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -246,13 +246,13 @@ Publish to Docker Hub for easy deployment:
 
 ```bash
 # Build and tag
-docker build -t yourusername/awswhitelist-mcp:latest .
+docker build -t yourusername/whitelistmcp-mcp:latest .
 
 # Push to Docker Hub
-docker push yourusername/awswhitelist-mcp:latest
+docker push yourusername/whitelistmcp-mcp:latest
 
 # Users can then run:
-docker run -i yourusername/awswhitelist-mcp:latest
+docker run -i yourusername/whitelistmcp-mcp:latest
 ```
 
 ## Quick Start for End Users
@@ -261,21 +261,21 @@ After packaging, users should be able to install with:
 
 ### Option 1: pip (Simplest)
 ```bash
-pip install awswhitelist-mcp
+pip install whitelistmcp-mcp
 ```
 
 ### Option 2: One-line installer
 ```bash
 # macOS/Linux
-curl -sSL https://raw.githubusercontent.com/dbbuilder/awswhitelist2/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/dbbuilder/whitelistmcp2/main/install.sh | bash
 
 # Windows PowerShell
-iwr -useb https://raw.githubusercontent.com/dbbuilder/awswhitelist2/main/install-windows.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/dbbuilder/whitelistmcp2/main/install-windows.ps1 | iex
 ```
 
 ### Option 3: Docker
 ```bash
-docker run -i awswhitelist-mcp
+docker run -i whitelistmcp-mcp
 ```
 
 ## Publishing Checklist
@@ -304,8 +304,8 @@ Create a formula:
 ```ruby
 class AwswhitelistMcp < Formula
   desc "MCP server for AWS Security Group IP whitelisting"
-  homepage "https://github.com/dbbuilder/awswhitelist2"
-  url "https://github.com/dbbuilder/awswhitelist2/archive/v1.0.0.tar.gz"
+  homepage "https://github.com/dbbuilder/whitelistmcp2"
+  url "https://github.com/dbbuilder/whitelistmcp2/archive/v1.0.0.tar.gz"
   sha256 "..."
   license "MIT"
 
@@ -323,11 +323,11 @@ Create a package:
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
-    <id>awswhitelist-mcp</id>
+    <id>whitelistmcp-mcp</id>
     <version>1.0.0</version>
     <title>AWS Whitelisting MCP Server</title>
     <authors>Your Name</authors>
-    <projectUrl>https://github.com/dbbuilder/awswhitelist2</projectUrl>
+    <projectUrl>https://github.com/dbbuilder/whitelistmcp2</projectUrl>
     <description>MCP server for AWS Security Group IP whitelisting</description>
   </metadata>
 </package>

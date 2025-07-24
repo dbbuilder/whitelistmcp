@@ -8,7 +8,7 @@ This guide explains how to deploy the AWS Whitelisting MCP Server for remote acc
 
 ```bash
 # Option 1: Install with remote extras
-pip install awswhitelist-mcp[remote]
+pip install whitelistmcp-mcp[remote]
 
 # Option 2: Install from requirements-remote.txt
 pip install -r requirements-remote.txt
@@ -19,10 +19,10 @@ pip install -e .
 
 ```bash
 # Basic remote server
-awswhitelist-remote --port 8080
+whitelistmcp-remote --port 8080
 
 # With authentication
-awswhitelist-remote --port 8080 --auth-token "your-secret-token"
+whitelistmcp-remote --port 8080 --auth-token "your-secret-token"
 ```
 
 ### 3. Configure Claude Desktop for Remote Access
@@ -32,7 +32,7 @@ Create a configuration that uses the remote proxy:
 ```json
 {
   "mcpServers": {
-    "awswhitelist-remote": {
+    "whitelistmcp-remote": {
       "command": "python",
       "args": ["-m", "scripts.mcp-remote-proxy"],
       "env": {
@@ -50,7 +50,7 @@ Create a configuration that uses the remote proxy:
 
 ```bash
 # Build the remote server image
-docker build -f Dockerfile.remote -t awswhitelist-mcp-remote .
+docker build -f Dockerfile.remote -t whitelistmcp-mcp-remote .
 
 # Run with docker-compose
 docker-compose -f docker-compose.remote.yml up -d
@@ -63,7 +63,7 @@ Deploy as a serverless function for cost-effective hosting.
 
 #### Google Cloud Run
 ```bash
-gcloud run deploy awswhitelist-mcp \
+gcloud run deploy whitelistmcp-mcp \
   --source . \
   --platform managed \
   --allow-unauthenticated
@@ -87,7 +87,7 @@ Run both local and remote servers simultaneously:
 {
   "mcpServers": {
     "aws-local": {
-      "command": "awswhitelist"
+      "command": "whitelistmcp"
     },
     "aws-prod": {
       "command": "python",

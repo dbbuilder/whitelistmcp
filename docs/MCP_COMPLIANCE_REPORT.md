@@ -1,8 +1,8 @@
-# MCP Compliance Report for awswhitelist Server
+# MCP Compliance Report for whitelistmcp Server
 
 ## Executive Summary
 
-This report analyzes the awswhitelist MCP server (v1.1.9) against the MCP Compliance Checklist.
+This report analyzes the whitelistmcp MCP server (v1.1.9) against the MCP Compliance Checklist.
 
 ### Critical Issues Found:
 1. **Missing batch request support** (MUST implement per spec)
@@ -257,7 +257,7 @@ This report analyzes the awswhitelist MCP server (v1.1.9) against the MCP Compli
 
 ## Conclusion
 
-The awswhitelist MCP server demonstrates strong compliance with most MCP requirements. The main gaps are:
+The whitelistmcp MCP server demonstrates strong compliance with most MCP requirements. The main gaps are:
 - Missing batch request support (spec requirement)
 - No timeout/cancellation handling
 - No request ID uniqueness validation

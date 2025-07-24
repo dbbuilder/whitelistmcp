@@ -23,7 +23,7 @@ Parameters:
   DockerImage:
     Type: String
     Description: Docker image URI
-    Default: 'awswhitelist-mcp:latest'
+    Default: 'whitelistmcp-mcp:latest'
   
   DesiredCount:
     Type: Number

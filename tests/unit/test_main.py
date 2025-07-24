@@ -162,7 +162,7 @@ class TestMain:
         mock_server_class.assert_called_once_with(config_path=None)
         mock_server.run.assert_called_once()
     
-    @patch('sys.argv', ['awswhitelist', '-c', 'config.json'])
+    @patch('sys.argv', ['whitelistmcp', '-c', 'config.json'])
     @patch('whitelistmcp.main.MCPServer')
     def test_main_with_config(self, mock_server_class):
         """Test main with config file."""
@@ -174,7 +174,7 @@ class TestMain:
         mock_server_class.assert_called_once_with(config_path='config.json')
         mock_server.run.assert_called_once()
     
-    @patch('sys.argv', ['awswhitelist', '-v'])
+    @patch('sys.argv', ['whitelistmcp', '-v'])
     @patch('whitelistmcp.main.MCPServer')
     def test_main_verbose(self, mock_server_class):
         """Test main with verbose flag."""
@@ -186,7 +186,7 @@ class TestMain:
         
         mock_server.logger.setLevel.assert_called_once_with("DEBUG")
     
-    @patch('sys.argv', ['awswhitelist', '--version'])
+    @patch('sys.argv', ['whitelistmcp', '--version'])
     def test_main_version(self):
         """Test showing version."""
         with pytest.raises(SystemExit) as exc_info:

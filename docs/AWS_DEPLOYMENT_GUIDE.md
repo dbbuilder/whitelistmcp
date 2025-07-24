@@ -74,7 +74,7 @@ Create an IAM role with these permissions for the MCP server:
 # Set variables
 export AWS_REGION=us-east-1
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export ECR_REPO=awswhitelist-mcp
+export ECR_REPO=whitelistmcp-mcp
 
 # Create ECR repository
 aws ecr create-repository --repository-name $ECR_REPO --region $AWS_REGION
@@ -96,17 +96,17 @@ Create `ecs-task-definition.json`:
 
 ```json
 {
-  "family": "awswhitelist-mcp",
+  "family": "whitelistmcp-mcp",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
   "executionRoleArn": "arn:aws:iam::YOUR_ACCOUNT:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::YOUR_ACCOUNT:role/awswhitelist-mcp-task-role",
+  "taskRoleArn": "arn:aws:iam::YOUR_ACCOUNT:role/whitelistmcp-mcp-task-role",
   "containerDefinitions": [
     {
       "name": "mcp-server",
-      "image": "YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/awswhitelist-mcp:latest",
+      "image": "YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/whitelistmcp-mcp:latest",
       "portMappings": [
         {
           "containerPort": 8080,
@@ -132,7 +132,7 @@ Create `ecs-task-definition.json`:
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/awswhitelist-mcp",
+          "awslogs-group": "/ecs/whitelistmcp-mcp",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -187,8 +187,8 @@ aws ecs create-cluster --cluster-name mcp-cluster
 # Create service
 aws ecs create-service \
   --cluster mcp-cluster \
-  --service-name awswhitelist-mcp \
-  --task-definition awswhitelist-mcp:1 \
+  --service-name whitelistmcp-mcp \
+  --task-definition whitelistmcp-mcp:1 \
   --desired-count 2 \
   --launch-type FARGATE \
   --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx,subnet-yyy],securityGroups=[sg-xxx],assignPublicIp=ENABLED}" \
@@ -201,7 +201,7 @@ aws ecs create-service \
 # Register scalable target
 aws application-autoscaling register-scalable-target \
   --service-namespace ecs \
-  --resource-id service/mcp-cluster/awswhitelist-mcp \
+  --resource-id service/mcp-cluster/whitelistmcp-mcp \
   --scalable-dimension ecs:service:DesiredCount \
   --min-capacity 2 \
   --max-capacity 10
@@ -210,7 +210,7 @@ aws application-autoscaling register-scalable-target \
 aws application-autoscaling put-scaling-policy \
   --service-namespace ecs \
   --scalable-dimension ecs:service:DesiredCount \
-  --resource-id service/mcp-cluster/awswhitelist-mcp \
+  --resource-id service/mcp-cluster/whitelistmcp-mcp \
   --policy-name mcp-cpu-scaling \
   --policy-type TargetTrackingScaling \
   --target-tracking-scaling-policy-configuration file://scaling-policy.json
@@ -254,7 +254,7 @@ aws ec2 run-instances \
   --key-name your-key-pair \
   --security-group-ids sg-xxx \
   --subnet-id subnet-xxx \
-  --iam-instance-profile Name=awswhitelist-mcp-instance-profile \
+  --iam-instance-profile Name=whitelistmcp-mcp-instance-profile \
   --user-data file://user-data.sh \
   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=mcp-server}]'
 ```
@@ -360,7 +360,7 @@ Create `lambda_handler.py`:
 ```python
 import json
 import os
-from awswhitelist.mcp.handler import MCPHandler
+from whitelistmcp.mcp.handler import MCPHandler
 
 # Initialize handler
 mcp_handler = MCPHandler()
@@ -428,7 +428,7 @@ mkdir lambda-package
 cd lambda-package
 
 # Install dependencies
-pip install awswhitelist-mcp -t .
+pip install whitelistmcp-mcp -t .
 
 # Add handler
 cp ../lambda_handler.py .
@@ -438,7 +438,7 @@ zip -r ../mcp-lambda.zip .
 
 # Create Lambda function
 aws lambda create-function \
-  --function-name awswhitelist-mcp \
+  --function-name whitelistmcp-mcp \
   --runtime python3.11 \
   --role arn:aws:iam::YOUR_ACCOUNT:role/lambda-mcp-role \
   --handler lambda_handler.lambda_handler \
@@ -451,11 +451,11 @@ aws lambda create-function \
 aws apigatewayv2 create-api \
   --name mcp-api \
   --protocol-type HTTP \
-  --target arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:awswhitelist-mcp
+  --target arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:function:whitelistmcp-mcp
 
 # Add Lambda permission
 aws lambda add-permission \
-  --function-name awswhitelist-mcp \
+  --function-name whitelistmcp-mcp \
   --statement-id api-gateway \
   --action lambda:InvokeFunction \
   --principal apigateway.amazonaws.com
@@ -521,12 +521,12 @@ aws kms create-key \
 ```bash
 # Create task execution role
 aws iam create-role \
-  --role-name awswhitelist-mcp-task-role \
+  --role-name whitelistmcp-mcp-task-role \
   --assume-role-policy-document file://task-trust-policy.json
 
 # Attach policies
 aws iam attach-role-policy \
-  --role-name awswhitelist-mcp-task-role \
+  --role-name whitelistmcp-mcp-task-role \
   --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
 
 # Create custom policy for MCP operations
@@ -535,7 +535,7 @@ aws iam create-policy \
   --policy-document file://mcp-policy.json
 
 aws iam attach-role-policy \
-  --role-name awswhitelist-mcp-task-role \
+  --role-name whitelistmcp-mcp-task-role \
   --policy-arn arn:aws:iam::YOUR_ACCOUNT:policy/MCPServerPolicy
 ```
 
@@ -662,7 +662,7 @@ After deployment, configure Claude Desktop to use the remote server:
 ```json
 {
   "mcpServers": {
-    "awswhitelist-prod": {
+    "whitelistmcp-prod": {
       "command": "python",
       "args": ["-m", "scripts.mcp-remote-proxy"],
       "env": {
@@ -704,7 +704,7 @@ After deployment, configure Claude Desktop to use the remote server:
    aws cloudwatch get-metric-statistics \
      --namespace AWS/ECS \
      --metric-name CPUUtilization \
-     --dimensions Name=ServiceName,Value=awswhitelist-mcp \
+     --dimensions Name=ServiceName,Value=whitelistmcp-mcp \
      --start-time 2024-01-01T00:00:00Z \
      --end-time 2024-01-01T01:00:00Z \
      --period 300 \
@@ -719,8 +719,8 @@ Enable debug logging:
 # Update task definition
 aws ecs update-service \
   --cluster mcp-cluster \
-  --service awswhitelist-mcp \
-  --task-definition awswhitelist-mcp:2 \
+  --service whitelistmcp-mcp \
+  --task-definition whitelistmcp-mcp:2 \
   --environment LOG_LEVEL=DEBUG
 ```
 
@@ -736,8 +736,8 @@ docker push $ECR_REPO:new
 # Update service
 aws ecs update-service \
   --cluster mcp-cluster \
-  --service awswhitelist-mcp \
-  --task-definition awswhitelist-mcp:new
+  --service whitelistmcp-mcp \
+  --task-definition whitelistmcp-mcp:new
 ```
 
 ### 2. Backup Configuration
@@ -745,7 +745,7 @@ aws ecs update-service \
 ```bash
 # Backup task definitions
 aws ecs describe-task-definition \
-  --task-definition awswhitelist-mcp \
+  --task-definition whitelistmcp-mcp \
   > backup/task-definition-$(date +%Y%m%d).json
 
 # Backup secrets

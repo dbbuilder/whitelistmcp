@@ -26,7 +26,7 @@ Gunicorn is a Python WSGI HTTP server for UNIX systems that serves Python web ap
 **Example usage:**
 ```bash
 # Run with gunicorn instead of the built-in server
-gunicorn awswhitelist.remote_server:app \
+gunicorn whitelistmcp.remote_server:app \
   --bind 0.0.0.0:8080 \
   --workers 4 \
   --worker-class aiohttp.GunicornWebWorker \
@@ -161,7 +161,7 @@ class JWTAuth:
             "user_id": user_id,
             "exp": datetime.utcnow() + timedelta(seconds=expires_in),
             "iat": datetime.utcnow(),
-            "iss": "awswhitelist-mcp"
+            "iss": "whitelistmcp-mcp"
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
     
@@ -199,7 +199,7 @@ def verify_request(request):
 ```json
 {
   "mcpServers": {
-    "awswhitelist-remote": {
+    "whitelistmcp-remote": {
       "command": "python",
       "args": ["-m", "scripts.mcp-remote-proxy"],
       "env": {
@@ -664,7 +664,7 @@ services:
   mcp-server:
     build: .
     command: >
-      gunicorn awswhitelist.remote_server:app
+      gunicorn whitelistmcp.remote_server:app
       --bind 0.0.0.0:8080
       --worker-class aiohttp.GunicornWebWorker
       --workers 4

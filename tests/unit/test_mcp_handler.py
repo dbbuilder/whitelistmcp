@@ -208,8 +208,8 @@ class TestMCPHandler:
         assert "whitelist_remove" in handler.methods
         assert "whitelist_list" in handler.methods
     
-    @patch('awswhitelist.mcp.handler.AWSService')
-    @patch('awswhitelist.mcp.handler.validate_credentials')
+    @patch('whitelistmcp.mcp.handler.AWSService')
+    @patch('whitelistmcp.mcp.handler.validate_credentials')
     def test_handle_whitelist_add(self, mock_validate, mock_aws_service, handler):
         """Test handling whitelist_add method."""
         # Mock credential validation
@@ -253,7 +253,7 @@ class TestMCPHandler:
         assert response.result["success"] is True
         assert "added" in response.result["message"]
     
-    @patch('awswhitelist.mcp.handler.validate_credentials')
+    @patch('whitelistmcp.mcp.handler.validate_credentials')
     def test_handle_invalid_credentials(self, mock_validate, handler):
         """Test handling request with invalid credentials."""
         # Mock invalid credentials
@@ -317,8 +317,8 @@ class TestMCPHandler:
         assert response.error.code == -32601
         assert "Method not found" in response.error.message
     
-    @patch('awswhitelist.mcp.handler.AWSService')
-    @patch('awswhitelist.mcp.handler.validate_credentials')
+    @patch('whitelistmcp.mcp.handler.AWSService')
+    @patch('whitelistmcp.mcp.handler.validate_credentials')
     def test_handle_whitelist_list(self, mock_validate, mock_aws_service, handler):
         """Test handling whitelist_list method."""
         # Mock credential validation
