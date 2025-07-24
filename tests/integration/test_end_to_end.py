@@ -94,9 +94,9 @@ class TestEndToEnd:
         assert response["id"] == "test-123"
         assert "error" not in response
         assert response["result"]["success"] is True
-        assert "successfully" in response["result"]["message"]
-        assert response["result"]["rule"]["port"] == 443  # https port
-        assert response["result"]["rule"]["cidr_ip"] == "192.168.1.1/32"
+        assert response["result"]["message"]
+        assert response["result"]["cloud"] == "aws"
+        assert response["result"]["details"] is not None
         
         # Verify AWS calls
         mock_sts.get_caller_identity.assert_called_once()

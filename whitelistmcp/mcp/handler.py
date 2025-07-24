@@ -840,7 +840,7 @@ class MCPHandler:
         
         # List rules using AWS service
         try:
-            aws_service = AWSService(credentials)
+            aws_service = AWSService(credentials.aws_credentials)
             rules = aws_service.list_whitelist_rules(params["security_group_id"])
             
             # Convert rules to response format
@@ -940,7 +940,7 @@ class MCPHandler:
         
         # Check if rule exists
         try:
-            aws_service = AWSService(credentials)
+            aws_service = AWSService(credentials.aws_credentials)
             exists = aws_service.check_rule_exists(rule)
             
             return create_mcp_response(
