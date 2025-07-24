@@ -6,7 +6,6 @@ import json
 import re
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field, field_validator
 
@@ -46,7 +45,7 @@ class CredentialProfile(BaseModel):
     gcp_region: str = "us-central1"
     
     @field_validator("aws_region")
-    def validate_aws_region(cls, v):
+    def validate_aws_region(cls, v: str) -> str:
         """Validate AWS region format."""
         if v:
             # AWS region pattern: xx-xxxx-n
@@ -56,7 +55,7 @@ class CredentialProfile(BaseModel):
         return v
     
     @field_validator("azure_region")
-    def validate_azure_region(cls, v):
+    def validate_azure_region(cls, v: str) -> str:
         """Validate Azure region format."""
         if v:
             # Azure regions are typically lowercase with no spaces
@@ -94,14 +93,14 @@ class DefaultParameters(BaseModel):
     gcp_additive_only: bool = True
     
     @field_validator("port")
-    def validate_port(cls, v):
+    def validate_port(cls, v: int) -> int:
         """Validate port number."""
         if not 1 <= v <= 65535:
             raise ValueError(f"Port must be between 1 and 65535, got {v}")
         return v
     
     @field_validator("protocol")
-    def validate_protocol(cls, v):
+    def validate_protocol(cls, v: str) -> str:
         """Validate protocol."""
         valid_protocols = ["tcp", "udp", "icmp", "-1"]  # -1 means all protocols
         if v not in valid_protocols:
@@ -109,7 +108,7 @@ class DefaultParameters(BaseModel):
         return v
     
     @field_validator("aws_region")
-    def validate_aws_region(cls, v):
+    def validate_aws_region(cls, v: str) -> str:
         """Validate AWS region format."""
         if v:
             pattern = r"^[a-z]{2}-[a-z]+-\d{1,2}$"
@@ -118,7 +117,7 @@ class DefaultParameters(BaseModel):
         return v
     
     @field_validator("azure_region", "azure_location")
-    def validate_azure_region(cls, v):
+    def validate_azure_region(cls, v: str) -> str:
         """Validate Azure region format."""
         if v:
             pattern = r"^[a-z]+[a-z0-9]*$"
@@ -137,7 +136,7 @@ class SecuritySettings(BaseModel):
     enable_audit_logging: bool = True
     
     @field_validator("allowed_ip_ranges")
-    def validate_ip_ranges(cls, v):
+    def validate_ip_ranges(cls, v: List[str]) -> List[str]:
         """Validate IP range format."""
         cidr_pattern = r"^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$"
         for ip_range in v:
@@ -146,7 +145,7 @@ class SecuritySettings(BaseModel):
         return v
     
     @field_validator("rate_limit_per_minute")
-    def validate_rate_limit(cls, v):
+    def validate_rate_limit(cls, v: int) -> int:
         """Validate rate limit."""
         if v < 1:
             raise ValueError(f"Rate limit must be at least 1, got {v}")
@@ -161,7 +160,7 @@ class PortMapping(BaseModel):
     description: Optional[str] = None
     
     @field_validator("port")
-    def validate_port(cls, v):
+    def validate_port(cls, v: int) -> int:
         """Validate port number."""
         if not 1 <= v <= 65535:
             raise ValueError(f"Port must be between 1 and 65535, got {v}")
@@ -331,7 +330,11 @@ def load_config(config_path: Optional[str] = None) -> Config:
         try:
             config.security_settings.rate_limit_per_minute = int(os.environ["WHITELIST_MCP_RATE_LIMIT"])
         except ValueError:
-            print(f"Warning: Invalid rate limit in WHITELIST_MCP_RATE_LIMIT: {os.environ['WHITELIST_MCP_RATE_LIMIT']}", file=sys.stderr)
+            print(
+                f"Warning: Invalid rate limit in WHITELIST_MCP_RATE_LIMIT: "
+                f"{os.environ['WHITELIST_MCP_RATE_LIMIT']}",
+                file=sys.stderr
+            )
     
     return config
 

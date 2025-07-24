@@ -1,7 +1,6 @@
 """
 Remote MCP Server implementation with HTTP/WebSocket support
 """
-import asyncio
 import json
 import os
 import logging
@@ -9,7 +8,6 @@ from typing import Optional, Dict, Any
 from aiohttp import web
 import aiohttp_cors
 
-from .main import MCPServer
 from .mcp.handler import MCPHandler
 from .config import Config
 

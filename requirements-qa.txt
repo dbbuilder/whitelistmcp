@@ -1,0 +1,42 @@
+# Static Analysis and Code Quality Tools
+
+# Type checking
+mypy>=1.8.0
+types-requests>=2.31.0
+
+# Code style and formatting
+black>=23.12.0
+isort>=5.13.0
+flake8>=7.0.0
+flake8-docstrings>=1.7.0
+flake8-bugbear>=24.1.0
+flake8-comprehensions>=3.14.0
+pylint>=3.0.0
+ruff>=0.1.0
+
+# Security scanning
+bandit[toml]>=1.7.0
+safety>=3.0.0
+
+# Code complexity
+radon>=6.0.0
+xenon>=0.9.0
+
+# Documentation
+pydocstyle>=6.3.0
+interrogate>=1.5.0
+
+# Unused code detection
+vulture>=2.10.0
+dead>=1.5.0
+
+# Import sorting and circular dependency detection
+import-linter>=2.0.0
+
+# Dependency analysis
+pipreqs>=0.4.0
+pip-audit>=2.6.0
+
+# Code coverage (for when we add tests)
+coverage[toml]>=7.4.0
+pytest-cov>=4.1.0

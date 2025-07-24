@@ -2,7 +2,6 @@
 
 from typing import List, Optional, Dict, Any, Union
 from dataclasses import dataclass
-import logging
 from datetime import datetime
 
 from azure.identity import ClientSecretCredential, DefaultAzureCredential
@@ -168,7 +167,10 @@ class AzureService:
             
             result = operation.result()
             
-            logger.info(f"Added rule to NSG {rule.nsg_name}: {rule.source_address_prefix} -> {rule.destination_port_range}")
+            logger.info(
+                f"Added rule to NSG {rule.nsg_name}: "
+                f"{rule.source_address_prefix} -> {rule.destination_port_range}"
+            )
             
             return WhitelistResult(
                 success=True,

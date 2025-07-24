@@ -1,7 +1,6 @@
 """IP address validation utilities."""
 
 import ipaddress
-import re
 import socket
 from typing import Optional, Dict, Any
 import requests

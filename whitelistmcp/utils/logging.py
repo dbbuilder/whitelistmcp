@@ -1,6 +1,5 @@
 """Logging configuration for AWS whitelisting MCP server."""
 
-import sys
 import logging
 from pathlib import Path
 from datetime import datetime, timezone

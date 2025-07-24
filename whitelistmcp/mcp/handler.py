@@ -286,13 +286,28 @@ class MCPHandler:
                     "type": "object",
                     "properties": {
                         "credentials": multi_cloud_credential_schema,
-                        "security_group_id": {"type": "string", "description": "AWS Security Group ID (e.g., sg-12345678)"},
+                        "security_group_id": {
+                            "type": "string",
+                            "description": "AWS Security Group ID (e.g., sg-12345678)"
+                        },
                         "nsg_name": {"type": "string", "description": "Azure Network Security Group name"},
                         "resource_group": {"type": "string", "description": "Azure Resource Group name"},
-                        "firewall_name": {"type": "string", "description": "GCP Firewall rule name (auto-generated if not provided)"},
+                        "firewall_name": {
+                            "type": "string",
+                            "description": "GCP Firewall rule name (auto-generated if not provided)"
+                        },
                         "ip_address": {"type": "string", "description": "IP address or CIDR block to whitelist"},
-                        "port": {"type": "integer", "description": "Port number (default from config)", "minimum": 1, "maximum": 65535},
-                        "protocol": {"type": "string", "enum": ["tcp", "udp", "icmp"], "description": "Protocol (default: tcp)"},
+                        "port": {
+                            "type": "integer",
+                            "description": "Port number (default from config)",
+                            "minimum": 1,
+                            "maximum": 65535
+                        },
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["tcp", "udp", "icmp"],
+                            "description": "Protocol (default: tcp)"
+                        },
                         "description": {"type": "string", "description": "Description for the rule"},
                         "service_name": {"type": "string", "description": "Service name (e.g., ssh, https)"}
                     },

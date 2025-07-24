@@ -4,7 +4,6 @@ import sys
 import json
 import argparse
 from typing import Dict, Any, Optional, List, Union
-from pathlib import Path
 
 from whitelistmcp import __version__
 from whitelistmcp.config import load_config
