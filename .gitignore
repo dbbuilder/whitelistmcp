@@ -116,3 +116,38 @@ dist.old/
 
 # Archive folder
 /archive/
+# === Security Patterns Added 2025-07-24 ===
+
+
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.env
+.env.*
+
+# Credentials and Secrets
+credentials.json
+serviceAccountKey.json
+auth.json
+secrets.json
+*.pem
+*.key
+*.cert
+*.p12
+
+# SSH Keys
+id_rsa
+id_dsa
+*.ppk
+
+# API Keys and Tokens
+*-api-key.*
+*-token.*
+*.token
+*_token
+*_TOKEN
+api-keys.txt
+tokens.txt
