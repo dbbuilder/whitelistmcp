@@ -15,7 +15,7 @@ exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 100
-known_first_party = ["awswhitelist"]
+known_first_party = ["whitelistmcp"]
 skip_gitignore = true
 
 [tool.pytest.ini_options]
@@ -27,7 +27,7 @@ python_functions = "test_*"
 addopts = "-v --strict-markers --tb=short"
 
 [tool.coverage.run]
-source = ["awswhitelist"]
+source = ["whitelistmcp"]
 omit = [
     "*/tests/*",
     "*/__init__.py",

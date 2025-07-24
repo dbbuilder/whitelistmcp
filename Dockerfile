@@ -26,7 +26,7 @@ RUN useradd -m -u 1000 mcpuser
 COPY --from=builder /root/.local /home/mcpuser/.local
 
 # Copy application code
-COPY awswhitelist/ ./awswhitelist/
+COPY whitelistmcp/ ./whitelistmcp/
 COPY setup.py .
 COPY README.md .
 
@@ -46,4 +46,4 @@ ENV PATH=/home/mcpuser/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 
 # Default command
-CMD ["python", "-m", "awswhitelist.main"]
+CMD ["python", "-m", "whitelistmcp.main"]

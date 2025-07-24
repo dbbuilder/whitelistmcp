@@ -2,7 +2,7 @@
 
 import pytest
 from unittest.mock import Mock, patch
-from awswhitelist.utils.credential_validator import (
+from whitelistmcp.utils.credential_validator import (
     validate_credentials,
     CredentialValidationError,
     AWSCredentials,

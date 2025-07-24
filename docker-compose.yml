@@ -1,19 +1,19 @@
 version: '3.8'
 
 services:
-  awswhitelist:
+  whitelistmcp:
     build:
       context: .
       dockerfile: Dockerfile
-    image: awswhitelist:latest
-    container_name: awswhitelist-mcp
+    image: whitelistmcp:latest
+    container_name: whitelistmcp-mcp
     restart: unless-stopped
     environment:
       # Default configuration (can be overridden)
-      - AWS_WHITELIST_REGION=us-east-1
-      - AWS_WHITELIST_PORT=22
-      - AWS_WHITELIST_PROTOCOL=tcp
-      - AWS_WHITELIST_RATE_LIMIT=60
+      - AWS_DEFAULT_REGION=us-east-1
+      - WHITELIST_MCP_PORT=22
+      - WHITELIST_MCP_PROTOCOL=tcp
+      - WHITELIST_MCP_RATE_LIMIT=60
     volumes:
       # Mount config file if needed
       - ./mcp_config.json:/app/mcp_config.json:ro
@@ -35,21 +35,21 @@ services:
     cpus: '0.5'
     
   # Development service with hot reload
-  awswhitelist-dev:
+  whitelistmcp-dev:
     build:
       context: .
       dockerfile: Dockerfile
       target: builder
-    image: awswhitelist:dev
-    container_name: awswhitelist-mcp-dev
+    image: whitelistmcp:dev
+    container_name: whitelistmcp-mcp-dev
     volumes:
-      - ./awswhitelist:/app/awswhitelist:ro
+      - ./whitelistmcp:/app/whitelistmcp:ro
       - ./tests:/app/tests:ro
       - ./mcp_config.json:/app/mcp_config.json:ro
       - ./logs:/app/logs
     environment:
       - PYTHONPATH=/app
-      - AWS_WHITELIST_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
     stdin_open: true
     tty: true
-    command: python -m awswhitelist.main -v
+    command: python -m whitelistmcp.main -v

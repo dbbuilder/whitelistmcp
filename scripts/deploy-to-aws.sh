@@ -210,13 +210,13 @@ deploy_lambda() {
     cd /tmp/lambda-package
     
     # Install dependencies
-    pip install awswhitelist-mcp -t .
+    pip install whitelistmcp -t .
     
     # Create handler
     cat > lambda_handler.py << 'EOF'
 import json
 import os
-from awswhitelist.mcp.handler import MCPHandler
+from whitelistmcp.mcp.handler import MCPHandler
 
 mcp_handler = MCPHandler()
 
@@ -332,7 +332,7 @@ show_config() {
     cat << EOF
 {
   "mcpServers": {
-    "awswhitelist-remote": {
+    "whitelistmcp-remote": {
       "command": "python",
       "args": ["-m", "scripts.mcp-remote-proxy"],
       "env": {

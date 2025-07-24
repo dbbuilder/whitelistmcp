@@ -13,8 +13,8 @@ from google.oauth2 import service_account
 from google.api_core.exceptions import GoogleAPIError, NotFound
 import google.auth
 
-from awswhitelist.utils.ip_validator import normalize_ip_input, IPValidationError
-from awswhitelist.utils.logging import get_logger
+from whitelistmcp.utils.ip_validator import normalize_ip_input, IPValidationError
+from whitelistmcp.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

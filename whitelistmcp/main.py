@@ -6,10 +6,10 @@ import argparse
 from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 
-from awswhitelist import __version__
-from awswhitelist.config import load_config
-from awswhitelist.utils.logging import setup_logging, get_logger
-from awswhitelist.mcp.handler import (
+from whitelistmcp import __version__
+from whitelistmcp.config import load_config
+from whitelistmcp.utils.logging import setup_logging, get_logger
+from whitelistmcp.mcp.handler import (
     MCPHandler,
     validate_mcp_request,
     create_mcp_error,

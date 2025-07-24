@@ -6,8 +6,8 @@ import boto3
 from botocore.exceptions import ClientError, BotoCoreError
 from pydantic import BaseModel, field_validator
 
-from awswhitelist.utils.credential_validator import AWSCredentials
-from awswhitelist.utils.ip_validator import validate_cidr_block
+from whitelistmcp.utils.credential_validator import AWSCredentials
+from whitelistmcp.utils.ip_validator import validate_cidr_block
 
 
 class AWSServiceError(Exception):
@@ -236,7 +236,7 @@ class AWSService:
             # Normalize IP if provided
             if ip_address:
                 try:
-                    from awswhitelist.utils.ip_validator import normalize_ip_input
+                    from whitelistmcp.utils.ip_validator import normalize_ip_input
                     ip_address = normalize_ip_input(ip_address)
                 except Exception:
                     return WhitelistResult(

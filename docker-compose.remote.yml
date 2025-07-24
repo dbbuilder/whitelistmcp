@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  awswhitelist-remote:
+  whitelistmcp-remote:
     build:
       context: .
       dockerfile: Dockerfile.remote
-    image: awswhitelist-mcp-remote:latest
+    image: whitelistmcp-mcp-remote:latest
     ports:
       - "8080:8080"
     environment:
@@ -57,7 +57,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
-      - awswhitelist-remote
+      - whitelistmcp-remote
     restart: unless-stopped
 
   # Optional: Redis for caching

@@ -16,8 +16,8 @@ from azure.mgmt.network.models import (
 )
 from azure.core.exceptions import AzureError, ResourceNotFoundError
 
-from awswhitelist.utils.ip_validator import normalize_ip_input, IPValidationError
-from awswhitelist.utils.logging import get_logger
+from whitelistmcp.utils.ip_validator import normalize_ip_input, IPValidationError
+from whitelistmcp.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

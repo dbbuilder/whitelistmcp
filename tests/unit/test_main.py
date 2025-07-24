@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch, MagicMock
 from io import StringIO
 import sys
 
-from awswhitelist.main import MCPServer, main
+from whitelistmcp.main import MCPServer, main
 
 
 class TestMCPServer:
@@ -15,15 +15,15 @@ class TestMCPServer:
     @pytest.fixture
     def server(self):
         """Create MCP server instance."""
-        with patch('awswhitelist.main.setup_logging') as mock_logging:
+        with patch('whitelistmcp.main.setup_logging') as mock_logging:
             mock_logging.return_value = Mock()
             server = MCPServer()
             return server
     
     def test_server_initialization(self):
         """Test server initialization."""
-        with patch('awswhitelist.main.setup_logging') as mock_logging:
-            with patch('awswhitelist.main.load_config') as mock_config:
+        with patch('whitelistmcp.main.setup_logging') as mock_logging:
+            with patch('whitelistmcp.main.load_config') as mock_config:
                 mock_logger = Mock()
                 mock_logging.return_value = mock_logger
                 
@@ -51,7 +51,7 @@ class TestMCPServer:
         
         # Mock handler response
         with patch.object(server.handler, 'handle_request') as mock_handle:
-            from awswhitelist.mcp.handler import MCPResponse
+            from whitelistmcp.mcp.handler import MCPResponse
             mock_handle.return_value = MCPResponse(
                 id="test-123",
                 result={"success": True, "rules": []}
@@ -113,7 +113,7 @@ class TestMCPServer:
         """Test running the server."""
         # Mock handler
         with patch.object(server.handler, 'handle_request') as mock_handle:
-            from awswhitelist.mcp.handler import MCPResponse
+            from whitelistmcp.mcp.handler import MCPResponse
             mock_handle.return_value = MCPResponse(
                 id="1",
                 result={"success": True}
@@ -150,8 +150,8 @@ class TestMCPServer:
 class TestMain:
     """Test main entry point."""
     
-    @patch('sys.argv', ['awswhitelist'])
-    @patch('awswhitelist.main.MCPServer')
+    @patch('sys.argv', ['whitelistmcp'])
+    @patch('whitelistmcp.main.MCPServer')
     def test_main_default(self, mock_server_class):
         """Test main with default arguments."""
         mock_server = Mock()
@@ -163,7 +163,7 @@ class TestMain:
         mock_server.run.assert_called_once()
     
     @patch('sys.argv', ['awswhitelist', '-c', 'config.json'])
-    @patch('awswhitelist.main.MCPServer')
+    @patch('whitelistmcp.main.MCPServer')
     def test_main_with_config(self, mock_server_class):
         """Test main with config file."""
         mock_server = Mock()
@@ -175,7 +175,7 @@ class TestMain:
         mock_server.run.assert_called_once()
     
     @patch('sys.argv', ['awswhitelist', '-v'])
-    @patch('awswhitelist.main.MCPServer')
+    @patch('whitelistmcp.main.MCPServer')
     def test_main_verbose(self, mock_server_class):
         """Test main with verbose flag."""
         mock_server = Mock()

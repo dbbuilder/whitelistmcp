@@ -5,7 +5,7 @@ import os
 import json
 from pathlib import Path
 from unittest.mock import patch, mock_open
-from awswhitelist.config import (
+from whitelistmcp.config import (
     Config, 
     CredentialProfile,
     DefaultParameters,
@@ -215,10 +215,10 @@ class TestLoadConfig:
     def test_load_config_from_env(self):
         """Test loading configuration from environment variables."""
         env_vars = {
-            "AWS_WHITELIST_REGION": "eu-west-1",
-            "AWS_WHITELIST_PORT": "8080",
-            "AWS_WHITELIST_PROTOCOL": "udp",
-            "AWS_WHITELIST_RATE_LIMIT": "120"
+            "AWS_DEFAULT_REGION": "eu-west-1",
+            "WHITELIST_MCP_PORT": "8080",
+            "WHITELIST_MCP_PROTOCOL": "udp",
+            "WHITELIST_MCP_RATE_LIMIT": "120"
         }
         
         with patch.dict(os.environ, env_vars):

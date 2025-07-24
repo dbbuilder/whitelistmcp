@@ -3,8 +3,8 @@
 import pytest
 import json
 from unittest.mock import patch, Mock
-from awswhitelist.main import MCPServer
-from awswhitelist.config import Config, DEFAULT_PORT_MAPPINGS
+from whitelistmcp.main import MCPServer
+from whitelistmcp.config import Config, DEFAULT_PORT_MAPPINGS
 
 
 class TestEndToEnd:
@@ -14,8 +14,8 @@ class TestEndToEnd:
     def server(self):
         """Create server instance with test config."""
         config = Config(port_mappings=DEFAULT_PORT_MAPPINGS)
-        with patch('awswhitelist.main.load_config', return_value=config):
-            with patch('awswhitelist.main.setup_logging') as mock_logging:
+        with patch('whitelistmcp.main.load_config', return_value=config):
+            with patch('whitelistmcp.main.setup_logging') as mock_logging:
                 mock_logging.return_value = Mock()
                 server = MCPServer()
                 return server

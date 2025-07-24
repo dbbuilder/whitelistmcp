@@ -150,10 +150,10 @@ def load_config(config_path: Optional[str] = None) -> Config:
         Config object with loaded configuration.
     
     Environment variables (override file config):
-        - AWS_WHITELIST_REGION: Default AWS region
-        - AWS_WHITELIST_PORT: Default port
-        - AWS_WHITELIST_PROTOCOL: Default protocol
-        - AWS_WHITELIST_RATE_LIMIT: Rate limit per minute
+        - WHITELIST_MCP_PORT: Default port
+        - WHITELIST_MCP_PROTOCOL: Default protocol
+        - WHITELIST_MCP_RATE_LIMIT: Rate limit per minute
+        - AWS_DEFAULT_REGION: Default AWS region
     """
     # Start with default config
     config_dict: Dict[str, Any] = {}
@@ -182,9 +182,7 @@ def load_config(config_path: Optional[str] = None) -> Config:
         config.default_parameters.cloud_provider = CloudProvider(cloud_provider)
     
     # AWS overrides
-    if "AWS_WHITELIST_REGION" in os.environ:
-        config.default_parameters.aws_region = os.environ["AWS_WHITELIST_REGION"]
-    elif "AWS_DEFAULT_REGION" in os.environ:
+    if "AWS_DEFAULT_REGION" in os.environ:
         config.default_parameters.aws_region = os.environ["AWS_DEFAULT_REGION"]
     
     if "AWS_DEFAULT_SECURITY_GROUP_ID" in os.environ:
@@ -208,20 +206,20 @@ def load_config(config_path: Optional[str] = None) -> Config:
     config.default_parameters.gcp_additive_only = gcp_additive != "false"
     
     # Common overrides
-    if "AWS_WHITELIST_PORT" in os.environ:
+    if "WHITELIST_MCP_PORT" in os.environ:
         try:
-            config.default_parameters.port = int(os.environ["AWS_WHITELIST_PORT"])
+            config.default_parameters.port = int(os.environ["WHITELIST_MCP_PORT"])
         except ValueError:
-            print(f"Warning: Invalid port in AWS_WHITELIST_PORT: {os.environ['AWS_WHITELIST_PORT']}", file=sys.stderr)
+            print(f"Warning: Invalid port in WHITELIST_MCP_PORT: {os.environ['WHITELIST_MCP_PORT']}", file=sys.stderr)
     
-    if "AWS_WHITELIST_PROTOCOL" in os.environ:
-        config.default_parameters.protocol = os.environ["AWS_WHITELIST_PROTOCOL"]
+    if "WHITELIST_MCP_PROTOCOL" in os.environ:
+        config.default_parameters.protocol = os.environ["WHITELIST_MCP_PROTOCOL"]
     
-    if "AWS_WHITELIST_RATE_LIMIT" in os.environ:
+    if "WHITELIST_MCP_RATE_LIMIT" in os.environ:
         try:
-            config.security_settings.rate_limit_per_minute = int(os.environ["AWS_WHITELIST_RATE_LIMIT"])
+            config.security_settings.rate_limit_per_minute = int(os.environ["WHITELIST_MCP_RATE_LIMIT"])
         except ValueError:
-            print(f"Warning: Invalid rate limit in AWS_WHITELIST_RATE_LIMIT: {os.environ['AWS_WHITELIST_RATE_LIMIT']}", file=sys.stderr)
+            print(f"Warning: Invalid rate limit in WHITELIST_MCP_RATE_LIMIT: {os.environ['WHITELIST_MCP_RATE_LIMIT']}", file=sys.stderr)
     
     return config
 

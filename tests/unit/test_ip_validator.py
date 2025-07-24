@@ -3,7 +3,7 @@
 import pytest
 import ipaddress
 from unittest.mock import patch, Mock
-from awswhitelist.utils.ip_validator import (
+from whitelistmcp.utils.ip_validator import (
     validate_ip_address,
     validate_cidr_block,
     is_private_ip,

@@ -3,18 +3,18 @@
 from typing import Dict, Any, Optional, Callable, List, Union
 from pydantic import BaseModel, field_validator
 
-from awswhitelist import __version__
-from awswhitelist.config import Config, get_port_number
-from awswhitelist.utils.credential_validator import (
+from whitelistmcp import __version__
+from whitelistmcp.config import Config, get_port_number
+from whitelistmcp.utils.credential_validator import (
     AWSCredentials,
     validate_credentials,
     CredentialValidationError
 )
-from awswhitelist.utils.ip_validator import (
+from whitelistmcp.utils.ip_validator import (
     normalize_ip_input,
     IPValidationError
 )
-from awswhitelist.aws.service import (
+from whitelistmcp.aws.service import (
     AWSService,
     SecurityGroupRule,
     WhitelistResult,

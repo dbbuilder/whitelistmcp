@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Installing AWS Whitelisting MCP Server..."
+echo "Installing Multi-Cloud Whitelisting MCP Server..."
 
 # Check Python
 if ! command -v python3 &> /dev/null; then
@@ -16,8 +16,8 @@ if ! command -v pip3 &> /dev/null; then
 fi
 
 # Install from PyPI
-echo "Installing AWS Whitelisting MCP Server from PyPI..."
-pip3 install --user awswhitelist-mcp
+echo "Installing Multi-Cloud Whitelisting MCP Server from PyPI..."
+pip3 install --user whitelistmcp
 
 # Configure Claude Desktop
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -46,8 +46,8 @@ except:
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
 
-config['mcpServers']['awswhitelist'] = {
-    'command': 'awswhitelist',
+config['mcpServers']['whitelistmcp'] = {
+    'command': 'whitelistmcp',
     'args': [],
     'env': {'PYTHONUNBUFFERED': '1'}
 }
@@ -62,8 +62,8 @@ else
     cat > "$CONFIG_PATH" << EOF
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": [],
       "env": {
         "PYTHONUNBUFFERED": "1"
@@ -79,8 +79,8 @@ echo "✅ Installation complete!"
 echo ""
 echo "Next steps:"
 echo "1. Restart Claude Desktop"
-echo "2. The AWS Whitelisting server will be available in Claude"
+echo "2. The Multi-Cloud Whitelisting server will be available in Claude"
 echo ""
 echo "To test the installation:"
-echo "  awswhitelist --help"
+echo "  whitelistmcp --help"
 echo ""

@@ -3,14 +3,14 @@
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from botocore.exceptions import ClientError
-from awswhitelist.aws.service import (
+from whitelistmcp.aws.service import (
     AWSService,
     SecurityGroupRule,
     WhitelistResult,
     AWSServiceError,
     create_rule_description
 )
-from awswhitelist.utils.credential_validator import AWSCredentials
+from whitelistmcp.utils.credential_validator import AWSCredentials
 
 
 class TestSecurityGroupRule:

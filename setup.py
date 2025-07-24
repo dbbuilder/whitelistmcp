@@ -5,7 +5,7 @@ import os
 
 # Read version
 version = {}
-with open("awswhitelist/__version__.py") as fp:
+with open("whitelistmcp/__version__.py") as fp:
     exec(fp.read(), version)
 
 # Read long description
@@ -82,12 +82,12 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "awswhitelist=awswhitelist.main:main",
-            "awswhitelist-remote=awswhitelist.remote_server:main",
+            "whitelistmcp=whitelistmcp.main:main",
+            "whitelistmcp-remote=whitelistmcp.remote_server:main",
         ],
     },
     include_package_data=True,
     package_data={
-        "awswhitelist": ["py.typed"],
+        "whitelistmcp": ["py.typed"],
     },
 )

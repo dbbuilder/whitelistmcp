@@ -1,7 +1,7 @@
 # Multi-Cloud Whitelist MCP Server
 
-[![PyPI version](https://badge.fury.io/py/awswhitelist-mcp.svg)](https://pypi.org/project/awswhitelist-mcp/)
-[![Python versions](https://img.shields.io/pypi/pyversions/awswhitelist-mcp.svg)](https://pypi.org/project/awswhitelist-mcp/)
+[![PyPI version](https://badge.fury.io/py/whitelistmcp.svg)](https://pypi.org/project/whitelistmcp/)
+[![Python versions](https://img.shields.io/pypi/pyversions/whitelistmcp.svg)](https://pypi.org/project/whitelistmcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP Protocol](https://img.shields.io/badge/MCP-1.1.10-blue.svg)](https://modelcontextprotocol.io)
 [![AWS](https://img.shields.io/badge/AWS-Supported-FF9900.svg)](https://aws.amazon.com/)
@@ -37,16 +37,15 @@ A Model Context Protocol (MCP) server for managing security group/firewall rules
 ### From PyPI (Recommended)
 
 ```bash
-pip install awswhitelist-mcp>=1.1.10
+pip install whitelistmcp>=2.0.0
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/dbbuilder/awswhitelist2.git
-cd awswhitelist2
+git clone https://github.com/dbbuilder/whitelistmcp.git
+cd whitelistmcp
 pip install -e .
-
 ```
 
 ## 🔧 Quick Start
@@ -54,7 +53,7 @@ pip install -e .
 ### 1. Install the Server
 
 ```bash
-pip install awswhitelist-mcp>=1.1.10
+pip install whitelistmcp>=2.0.0
 ```
 
 ### 2. Configure Claude Desktop
@@ -64,8 +63,8 @@ Add to your Claude Desktop configuration file:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "env": {
         "CLOUD_PROVIDER": "aws",  // Options: aws, azure, gcp, all
         "AWS_ACCESS_KEY_ID": "your-aws-key",
@@ -176,11 +175,11 @@ Check if an IP/service combination is whitelisted.
 Synchronize rules across multiple clouds (Enterprise feature).
 
 In Claude Desktop, these appear as:
-- `awswhitelist:whitelist_add`
-- `awswhitelist:whitelist_remove`
-- `awswhitelist:whitelist_list`
-- `awswhitelist:whitelist_check`
-- `awswhitelist:whitelist_sync`
+- `whitelistmcp:whitelist_add`
+- `whitelistmcp:whitelist_remove`
+- `whitelistmcp:whitelist_list`
+- `whitelistmcp:whitelist_check`
+- `whitelistmcp:whitelist_sync`
 
 ## 🔐 Credential Management
 
@@ -188,8 +187,8 @@ In Claude Desktop, these appear as:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "env": {
         "AWS_ACCESS_KEY_ID": "your-key",
         "AWS_SECRET_ACCESS_KEY": "your-secret",
@@ -204,8 +203,8 @@ In Claude Desktop, these appear as:
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "env": {
         "AWS_PROFILE": "production"
       }
@@ -235,17 +234,17 @@ For advanced patterns, see [MCP_CREDENTIAL_PATTERNS.md](docs/MCP_CREDENTIAL_PATT
 
 ```bash
 # Test initialization
-echo '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{}}' | awswhitelist
+echo '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{}}' | whitelistmcp
 
 # List available tools
-echo '{"jsonrpc":"2.0","method":"tools/list","id":2,"params":{}}' | awswhitelist
+echo '{"jsonrpc":"2.0","method":"tools/list","id":2,"params":{}}' | whitelistmcp
 ```
 
 ### Run Compliance Tests
 
 ```bash
 # Check MCP compliance
-python MCP_DIAGNOSTIC_SCRIPT.py awswhitelist
+python MCP_DIAGNOSTIC_SCRIPT.py whitelistmcp
 ```
 
 ## 🔍 Troubleshooting
@@ -273,8 +272,8 @@ python MCP_DIAGNOSTIC_SCRIPT.py awswhitelist
 ```json
 {
   "mcpServers": {
-    "awswhitelist": {
-      "command": "awswhitelist",
+    "whitelistmcp": {
+      "command": "whitelistmcp",
       "args": ["-v"]
     }
   }

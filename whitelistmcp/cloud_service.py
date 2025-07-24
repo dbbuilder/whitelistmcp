@@ -6,23 +6,23 @@ from enum import Enum
 import asyncio
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from awswhitelist.config import CloudProvider, Config
-from awswhitelist.utils.logging import get_logger
+from whitelistmcp.config import CloudProvider, Config
+from whitelistmcp.utils.logging import get_logger
 
 # Import cloud-specific services
-from awswhitelist.aws.service import (
+from whitelistmcp.aws.service import (
     AWSService, 
     AWSCredentials, 
     SecurityGroupRule as AWSRule,
     WhitelistResult as AWSResult
 )
-from awswhitelist.azure.service import (
+from whitelistmcp.azure.service import (
     AzureService,
     AzureCredentials,
     NSGRule as AzureRule,
     WhitelistResult as AzureResult
 )
-from awswhitelist.gcp.service import (
+from whitelistmcp.gcp.service import (
     GCPService,
     GCPCredentials,
     FirewallRule as GCPRule,
@@ -256,8 +256,8 @@ class CloudServiceManager:
     ) -> UnifiedWhitelistResult:
         """Add rule to AWS security group."""
         try:
-            from awswhitelist.utils.ip_validator import normalize_ip_input
-            from awswhitelist.aws.service import create_rule_description
+            from whitelistmcp.utils.ip_validator import normalize_ip_input
+            from whitelistmcp.aws.service import create_rule_description
             
             service = self._get_aws_service(credentials)
             
@@ -305,8 +305,8 @@ class CloudServiceManager:
     ) -> UnifiedWhitelistResult:
         """Add rule to Azure NSG."""
         try:
-            from awswhitelist.utils.ip_validator import normalize_ip_input
-            from awswhitelist.azure.service import create_rule_description
+            from whitelistmcp.utils.ip_validator import normalize_ip_input
+            from whitelistmcp.azure.service import create_rule_description
             
             service = self._get_azure_service(credentials)
             
@@ -354,8 +354,8 @@ class CloudServiceManager:
     ) -> UnifiedWhitelistResult:
         """Add rule to GCP firewall."""
         try:
-            from awswhitelist.utils.ip_validator import normalize_ip_input
-            from awswhitelist.gcp.service import create_rule_description
+            from whitelistmcp.utils.ip_validator import normalize_ip_input
+            from whitelistmcp.gcp.service import create_rule_description
             
             service = self._get_gcp_service(credentials)
             

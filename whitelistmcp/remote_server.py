@@ -64,7 +64,7 @@ class RemoteMCPServer:
         """Index page with server info"""
         return web.json_response({
             "service": "AWS Whitelisting MCP Server",
-            "version": "1.1.10",
+            "version": "2.0.0",
             "protocol": "MCP",
             "endpoints": {
                 "health": "/health",
@@ -76,8 +76,8 @@ class RemoteMCPServer:
         """Health check endpoint"""
         return web.json_response({
             "status": "healthy",
-            "service": "awswhitelist-mcp",
-            "version": "1.1.10",
+            "service": "whitelistmcp",
+            "version": "2.0.0",
             "mode": "remote"
         })
     

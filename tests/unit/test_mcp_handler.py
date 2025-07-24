@@ -2,7 +2,7 @@
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from awswhitelist.mcp.handler import (
+from whitelistmcp.mcp.handler import (
     MCPHandler,
     MCPRequest,
     MCPResponse,
@@ -11,8 +11,8 @@ from awswhitelist.mcp.handler import (
     create_mcp_response,
     create_mcp_error
 )
-from awswhitelist.aws.service import SecurityGroupRule, WhitelistResult
-from awswhitelist.config import Config
+from whitelistmcp.aws.service import SecurityGroupRule, WhitelistResult
+from whitelistmcp.config import Config
 
 
 class TestMCPRequest:

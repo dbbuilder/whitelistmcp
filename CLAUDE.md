@@ -8,25 +8,25 @@ Multi-Cloud Whitelisting MCP Server is a Model Context Protocol (MCP) server tha
 
 ## Key Architecture Components
 
-### 1. MCP Protocol Layer (`awswhitelist/mcp/`)
+### 1. MCP Protocol Layer (`whitelistmcp/mcp/`)
 - `handler.py`: Implements MCP request/response handling with JSON-RPC 2.0 format
 - Methods: `tools/call` (standard MCP method), `tools/list`, `initialize`
 - Tool names: `whitelist_add`, `whitelist_remove`, `whitelist_list`, `whitelist_check`
 - Stateless design - credentials passed with each request
 
 ### 2. Cloud Service Layers
-- **AWS** (`awswhitelist/aws/service.py`): EC2 Security Groups via boto3
-- **Azure** (`awswhitelist/azure/service.py`): Network Security Groups via azure-mgmt-network
-- **GCP** (`awswhitelist/gcp/service.py`): VPC Firewall Rules via google-cloud-compute
+- **AWS** (`whitelistmcp/aws/service.py`): EC2 Security Groups via boto3
+- **Azure** (`whitelistmcp/azure/service.py`): Network Security Groups via azure-mgmt-network
+- **GCP** (`whitelistmcp/gcp/service.py`): VPC Firewall Rules via google-cloud-compute
 - Each service handles rule creation, deletion, and listing with cloud-specific logic
 - GCP includes additive-only mode for safety (never modifies existing rules)
 
-### 3. Utilities (`awswhitelist/utils/`)
+### 3. Utilities (`whitelistmcp/utils/`)
 - `credential_validator.py`: AWS credential validation using STS
 - `ip_validator.py`: IP address/CIDR validation and normalization
 - `logging.py`: Structured JSON logging configuration
 
-### 4. Configuration (`awswhitelist/config.py`)
+### 4. Configuration (`whitelistmcp/config.py`)
 - Hierarchical configuration: file → environment variables → defaults
 - Multi-cloud credential profiles with cloud-specific settings
 - Supports port mappings, security settings, and cloud provider selection
@@ -44,22 +44,22 @@ pip install -e .
 # Run tests
 pytest                    # Run all tests
 pytest tests/unit/       # Run unit tests only
-pytest -v --cov=awswhitelist  # With coverage
+pytest -v --cov=whitelistmcp  # With coverage
 
 # Code quality
-black awswhitelist/      # Format code
-flake8 awswhitelist/     # Lint code
-mypy awswhitelist/       # Type checking
+black whitelistmcp/      # Format code
+flake8 whitelistmcp/     # Lint code
+mypy whitelistmcp/       # Type checking
 
 # Run the server
-python -m awswhitelist.main              # Default mode
-python -m awswhitelist.main -c config.json  # With config file
-python -m awswhitelist.main -v           # Verbose logging
+python -m whitelistmcp.main              # Default mode
+python -m whitelistmcp.main -c config.json  # With config file
+python -m whitelistmcp.main -v           # Verbose logging
 
 # Docker operations
 docker-compose build                      # Build image
-docker-compose up awswhitelist           # Run production
-docker-compose up awswhitelist-dev       # Run development
+docker-compose up whitelistmcp           # Run production
+docker-compose up whitelistmcp-dev       # Run development
 ```
 
 ## Testing Approach
