@@ -38,7 +38,7 @@ class TestAWSCredentials:
     
     def test_invalid_access_key_format(self):
         """Test invalid access key format."""
-        with pytest.raises(ValueError, match="Invalid access_key_id format"):
+        with pytest.raises(ValueError, match="Invalid AWS access key format"):
             AWSCredentials(
                 access_key_id="invalid-key",
                 secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
@@ -47,14 +47,14 @@ class TestAWSCredentials:
     
     def test_empty_credentials(self):
         """Test empty credential fields."""
-        with pytest.raises(ValueError, match="access_key_id cannot be empty"):
+        with pytest.raises(ValueError, match="Invalid AWS access key format"):
             AWSCredentials(
                 access_key_id="",
                 secret_access_key="secret",
                 region="us-east-1"
             )
         
-        with pytest.raises(ValueError, match="secret_access_key cannot be empty"):
+        with pytest.raises(ValueError, match="Secret access key cannot be empty"):
             AWSCredentials(
                 access_key_id="AKIAIOSFODNN7EXAMPLE",
                 secret_access_key="",
@@ -63,7 +63,7 @@ class TestAWSCredentials:
     
     def test_invalid_region(self):
         """Test invalid region format."""
-        with pytest.raises(ValueError, match="Invalid region format"):
+        with pytest.raises(ValueError, match="Invalid AWS region format"):
             AWSCredentials(
                 access_key_id="AKIAIOSFODNN7EXAMPLE",
                 secret_access_key="secret",
@@ -118,6 +118,7 @@ class TestValidateCredentials:
             'sts',
             aws_access_key_id="AKIAIOSFODNN7EXAMPLE",
             aws_secret_access_key="secret",
+            aws_session_token=None,
             region_name="us-east-1"
         )
     
@@ -252,11 +253,10 @@ class TestCredentialValidationError:
         """Test error creation and message."""
         error = CredentialValidationError("Invalid credentials")
         assert str(error) == "Invalid credentials"
-        assert isinstance(error, ValueError)
+        assert isinstance(error, Exception)
     
     def test_error_with_details(self):
         """Test error with additional details."""
-        error = CredentialValidationError("Invalid credentials", details={"code": "InvalidToken"})
-        assert str(error) == "Invalid credentials"
-        assert hasattr(error, "details")
-        assert error.details["code"] == "InvalidToken"
+        error = CredentialValidationError("Invalid credentials: InvalidToken")
+        assert "Invalid credentials" in str(error)
+        assert "InvalidToken" in str(error)

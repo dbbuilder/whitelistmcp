@@ -55,7 +55,7 @@ class MCPRequest(BaseModel):
     params: Dict[str, Any] = {}
     
     @field_validator("jsonrpc")
-    def validate_jsonrpc(cls, v):
+    def validate_jsonrpc(cls, v: str) -> str:
         """Validate JSON-RPC version."""
         if v != "2.0":
             raise ValueError("JSON-RPC version must be 2.0")
@@ -71,7 +71,7 @@ class MCPResponse(BaseModel):
     error: Optional[MCPError] = None
     
     @field_validator("error")
-    def validate_response(cls, v, info):
+    def validate_response(cls, v: Optional[MCPError], info: Any) -> Optional[MCPError]:
         """Validate that either result or error is set, not both."""
         if v is not None and info.data.get("result") is not None:
             raise ValueError("Response cannot have both result and error")

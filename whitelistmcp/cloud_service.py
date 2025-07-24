@@ -11,20 +11,17 @@ from whitelistmcp.utils.logging import get_logger
 from whitelistmcp.aws.service import (
     AWSService, 
     AWSCredentials, 
-    SecurityGroupRule as AWSRule,
-    WhitelistResult as AWSResult
+    SecurityGroupRule as AWSRule
 )
 from whitelistmcp.azure.service import (
     AzureService,
     AzureCredentials,
-    NSGRule as AzureRule,
-    WhitelistResult as AzureResult
+    NSGRule as AzureRule
 )
 from whitelistmcp.gcp.service import (
     GCPService,
     GCPCredentials,
-    FirewallRule as GCPRule,
-    WhitelistResult as GCPResult
+    FirewallRule as GCPRule
 )
 
 logger = get_logger(__name__)

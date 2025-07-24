@@ -410,7 +410,7 @@ class GCPService:
         
         return bool(set1.intersection(set2))
     
-    def _wait_for_operation(self, operation):
+    def _wait_for_operation(self, operation: Any) -> None:
         """Wait for a GCP operation to complete."""
         # For zonal/regional operations, we'd need more complex handling
         # For now, assume global operations

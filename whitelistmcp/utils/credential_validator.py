@@ -21,7 +21,7 @@ class AWSCredentials(BaseModel):
     region: str = "us-east-1"
     
     @field_validator("access_key_id")
-    def validate_access_key(cls, v):
+    def validate_access_key(cls, v: str) -> str:
         """Validate AWS access key format."""
         # AWS access keys are 20 characters long and start with AKIA or ASIA
         if not re.match(r"^(AKIA|ASIA)[A-Z0-9]{16}$", v):
@@ -29,14 +29,14 @@ class AWSCredentials(BaseModel):
         return v
     
     @field_validator("secret_access_key")
-    def validate_secret_key(cls, v):
+    def validate_secret_key(cls, v: str) -> str:
         """Validate secret access key is not empty."""
         if not v or not v.strip():
             raise ValueError("Secret access key cannot be empty")
         return v
     
     @field_validator("region")
-    def validate_region(cls, v):
+    def validate_region(cls, v: str) -> str:
         """Validate AWS region format."""
         # AWS region pattern: xx-xxxx-n
         pattern = r"^[a-z]{2}-[a-z]+-\d{1,2}$"
